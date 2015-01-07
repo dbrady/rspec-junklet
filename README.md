@@ -1,6 +1,6 @@
 # Junklet
 
-Create tiny chunks of unique junk data in RSpec with `junk_let :name`.
+Create tiny chunks of unique junk data in RSpec with `junklet :name`.
 
 Junklet data is fixture data that:
 
@@ -55,24 +55,24 @@ idiom of "uncared-about" data.
 Enter Junklet:
 
 ```ruby
-junk_let :first_name
-junk_let :last_name
-junk_let :address
-junk_let :city
-junk_let :state
-junk_let :phone
+junklet :first_name
+junklet :last_name
+junklet :address
+junklet :city
+junklet :state
+junklet :phone
 ```
 
-Or, if you don't want the junk_lets to sprawl vertically,
+Or, if you don't want the junklets to sprawl vertically,
 
 ```ruby
-junk_let :first_name, :last_name, :address, :city, :state, :phone
+junklet :first_name, :last_name, :address, :city, :state, :phone
 ```
 
 This will have the same effect as calling `let` on the named fields
 and setting the fieldname and a UUID to be the memoized value.
 
-No, `junk_let!` is NOT also included here because it doesn't really
+No, `junklet!` is NOT also included here because it doesn't really
 make sense until and unless we write custom generators.
 
 # TODO
@@ -92,7 +92,7 @@ make sense until and unless we write custom generators.
   could argue that this starts to lead towards nondeterministic tests
   but the reality is the started heading there when we first started
   making calls to SecureRandom. My thinking is that a call to
-  `junk_let` could accept an optional hash and/or block that defines a
+  `junklet` could accept an optional hash and/or block that defines a
   formatter and/or generator, and/or the configuration for Junklet
   could accept definitions of domain-specific formatters that you want
   to reuse throughout your project.
@@ -102,7 +102,7 @@ make sense until and unless we write custom generators.
   was intended. The existing spec suite merely uses junklets and then
   tests their side effects.
 
-* RSpec 3.x support - Ideally the mechanism for adding the `junk_let`
+* RSpec 3.x support - Ideally the mechanism for adding the `junklet`
   method is the same, but if not then a separate version would be nice
   for building and testing RSpec 3 vs. 2. We need to support both, but
   at the time of this writing the most pressing need is for

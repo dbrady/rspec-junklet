@@ -5,9 +5,9 @@ describe Junklet do
 
   let(:regex) { /-[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/ }
 
-  describe '.junk_let' do
+  describe '.junklet' do
     context "with a single arg" do
-      junk_let :junk
+      junklet :junk
       
       specify { expect(junk).to be }
       specify { expect(junk).to match /^junk-/ }
@@ -19,7 +19,7 @@ describe Junklet do
     end
 
     context "with multiple args" do
-      junk_let :junk, :toss, :crud, :crap
+      junklet :junk, :toss, :crud, :crap
 
       specify { expect(junk).to match /^junk-/ }
       specify { expect(junk).to match regex }
