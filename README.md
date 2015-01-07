@@ -72,8 +72,8 @@ junk_let :first_name, :last_name, :address, :city, :state, :phone
 This will have the same effect as calling `let` on the named fields
 and setting the fieldname and a UUID to be the memoized value.
 
-Yes, `junk_let!` is also included here and works the same way as a
-call to `let!` with an identical block.
+No, `junk_let!` is NOT also included here because it doesn't really
+make sense until and unless we write custom generators.
 
 # TODO
 
