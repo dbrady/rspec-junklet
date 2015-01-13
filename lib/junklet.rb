@@ -14,10 +14,22 @@ module RSpec
           end
           
           args.zip(names).each do |arg, name|
-            let(arg) { "#{name}-#{SecureRandom.uuid}" }
+            let(arg) { "#{name}-#{junk}" }
           end
         end
       end
+
+      def junk(size=32)
+        trash = ""
+        trash += SecureRandom.hex while trash.size < size
+        trash = trash[0...size]
+      end
     end
+
+    # class ExampleGroup
+    #   def self.junk
+    #     SecureRandom.hex
+    #   end
+    # end
   end
 end

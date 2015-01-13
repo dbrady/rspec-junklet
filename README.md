@@ -1,6 +1,8 @@
 # Junklet
 
-Create tiny chunks of unique junk data in RSpec with `junklet :name`.
+Cache tiny chunks of unique junk data in RSpec with `junklet :name`;
+get handy clumps of junk data at any time with `junk`. Size your junk
+with e.g. `junk 100` or `junk 4`.
 
 Junklet data is fixture data that:
 
@@ -16,6 +18,21 @@ So,
 * If equality fails we want to be led to the offending field by the
   error message and not just the line number in the stack trace.
 
+# If You Work At CMM
+
+1. junklet means never having to type SecureRandom again.
+1. junklet prepends the field name to make errors easier to read.
+1. junk() returns a 32-byte random hex number, junk(n) returns the
+   same thing, only n bytes long (can be longer than 32)
+
+Instead of writing this -> write this:
+
+* `let(:pants) { SecureRandom.uuid }` -> `junklet :pants`
+* `let(:host_name) { "host-name-#{SecureRandom.uuid}" }` -> `junklet :host_name, separator: '-'` (Remember that underscores aren't legal in host names)
+* `let(:bad_number) { SecureRandom.hex[0..7] }` -> `let(:bad_number) { junk 8 }`
+* `let(:website) { "www.#{SecureRandom.hex}.com" }` -> `let(:website) { "www.#{junk}.com }`
+
+
 # Usage
 
     junklet :var [, :var_2 [...]] [, options_hash]
@@ -23,20 +40,27 @@ So,
     junklet :first_name
 
 Creates a `let :first_name` with the value of
-`first_name-774030d0-f58d-4f58-8c5e-dddbdc7f9580` (the uuid will
-change with each test case)
+`first_name-774030d0f58d4f588c5edddbdc7f9580` (the hex number is a
+uuid without hyphens and will change with each test case, not just
+each test run)
 
     junklet :host_name, separator: '-'
 
 Creates a `let :host_name`, but changes underscores to hyphens in the
 string value,
-e.g. `host-name-774030d0-f58d-4f58-8c5e-dddbdc7f9580`. Useful
+e.g. `host-name-774030d0f58d4f588c5edddbdc7f9580`. Useful
 specifically for host names, which cannot have underscores in them.
 
     junklet :a_a, :b_b, :c_c, separator: '.'
 
 Does what it says on the tin: creates 3 items with string values of
 `a.a`, `b.b`, and `c.c` respectively.
+
+
+    junk [length=32]
+
+Can be called from inside a spec or let block, and returns a random
+hex string 32 bytes long (or whatever length you specify)
 
 # Background
 
@@ -92,10 +116,8 @@ junklet :first_name, :last_name, :address, :city, :state, :phone
 ```
 
 This will have the same effect as calling `let` on the named fields
-and setting the fieldname and a UUID to be the memoized value.
-
-No, `junklet!` is NOT also included here because it doesn't really
-make sense until and unless we write custom generators.
+and setting the fieldname and a 32-byte hex string (a uuid with
+hyphens removed) to be the memoized value.
 
 # TODO
 
@@ -147,14 +169,11 @@ Or install it yourself as:
 
     $ gem install junklet
 
-## Usage
-
-TODO: Write usage instructions here
-
 ## Contributing
 
 1. Fork it ( https://github.com/[my-github-username]/junklet/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+4. Write specs to document how your change is to be used
+5. Push to the branch (`git push origin my-new-feature`)
+6. Create a new Pull Request
