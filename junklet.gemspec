@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Dave Brady"]
   spec.email         = ["dbrady@covermymeds.com"]
   spec.summary       = "Easily create junk data for specs"
-  spec.description   = "Works like let and let! for rspec, but creates unique random junk data"
+  spec.description   = "Works like let for rspec, but creates unique random junk data"
   spec.homepage      = ""
   spec.license       = "MIT"
 

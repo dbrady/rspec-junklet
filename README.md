@@ -16,6 +16,28 @@ So,
 * If equality fails we want to be led to the offending field by the
   error message and not just the line number in the stack trace.
 
+# Usage
+
+    junklet :var [, :var_2 [...]] [, options_hash]
+
+    junklet :first_name
+
+Creates a `let :first_name` with the value of
+`first_name-774030d0-f58d-4f58-8c5e-dddbdc7f9580` (the uuid will
+change with each test case)
+
+    junklet :host_name, separator: '-'
+
+Creates a `let :host_name`, but changes underscores to hyphens in the
+string value,
+e.g. `host-name-774030d0-f58d-4f58-8c5e-dddbdc7f9580`. Useful
+specifically for host names, which cannot have underscores in them.
+
+    junklet :a_a, :b_b, :c_c, separator: '.'
+
+Does what it says on the tin: creates 3 items with string values of
+`a.a`, `b.b`, and `c.c` respectively.
+
 # Background
 
 At CoverMyMeds we have a legacy impingement that prevents us sometimes
