@@ -1,12 +1,13 @@
 PATH
   remote: .
   specs:
-    junklet (0.9.1)
+    junklet (0.9.2)
 
 GEM
   remote: https://rubygems.org/
   specs:
     builder (3.2.2)
+    coderay (1.1.0)
     cucumber (1.3.18)
       builder (>= 2.1.2)
       diff-lcs (>= 1.1.3)
@@ -16,8 +17,13 @@ GEM
     diff-lcs (1.2.5)
     gherkin (2.12.2)
       multi_json (~> 1.3)
+    method_source (0.8.2)
     multi_json (1.10.1)
     multi_test (0.1.1)
+    pry (0.10.1)
+      coderay (~> 1.1.0)
+      method_source (~> 0.8.1)
+      slop (~> 3.4)
     rake (10.4.2)
     rspec (2.99.0)
       rspec-core (~> 2.99.0)
@@ -27,6 +33,7 @@ GEM
     rspec-expectations (2.99.2)
       diff-lcs (>= 1.1.3, < 2.0)
     rspec-mocks (2.99.2)
+    slop (3.6.0)
 
 PLATFORMS
   ruby
@@ -35,5 +42,6 @@ DEPENDENCIES
   bundler (~> 1.7)
   cucumber
   junklet!
+  pry
   rake (~> 10.0)
   rspec (~> 2.0)
