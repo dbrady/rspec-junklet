@@ -1,0 +1,7 @@
+    let(:name) { "Bob" }
+    junklet :address
+    let(:city) { "Faketown" }
+    junklet :state
+    junklet :zip
+    let(:extra) { true }
+    let(:pants) { ON_FIRE }

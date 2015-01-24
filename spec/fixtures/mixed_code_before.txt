@@ -1,0 +1,46 @@
+require "spec_helper"
+
+describe XMLCommon do
+  subject do
+    node = xml_node
+    Class.new do
+      include XMLCommon
+      define_method(:xml_node) { node }
+    end.new
+  end
+
+  describe "#fetch" do
+    it "looks in the `:from` element" do
+      other_key, other_value = Array.new(2) { junk }
+      from = { other_key.to_sym => other_value }
+      expect(subject.fetch(other_key, from: from)).to \
+        eq(other_value)
+    end
+
+    it "fails if the attribute isn't in `:from`" do
+      missing_key = junk.to_sym
+      expect{ subject.fetch(missing_key) }.to \
+        raise_error(XMLCommon::AttributeNotFound)
+    end
+
+    it "defaults to `xml_node`" do
+      expect(subject.fetch(key)).to eq(value)
+    end
+  end
+
+  specify "xml_node" do
+    pending "i wouldn't usually test this, but since it's going to be inherited, i think it's a good idea"
+  end
+
+  specify "#==" do
+    pending
+  end
+
+  specify "#to_s" do
+    pending
+  end
+
+  let(:key)      { junk.to_sym }
+  junklet :value
+  let(:xml_node) { { key => value } }
+end

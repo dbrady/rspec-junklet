@@ -1,0 +1,6 @@
+describe SomeClass do
+  let(:key)      { junk.to_sym }
+  let(:xml_node) { { key => value } }
+
+  junklet :a_value, :new_value, :other_value, :value
+end

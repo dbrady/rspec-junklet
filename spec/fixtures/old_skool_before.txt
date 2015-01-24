@@ -1,0 +1,7 @@
+    let(:name)    { "Bob" }
+    let(:address) { SecureRandom.uuid }
+    let(:city)    { "Faketown" }
+    let(:state)   {     SecureRandom.uuid      }
+    let(:zip)     {SecureRandom.uuid}
+    let(:extra)   { true }
+    let(:pants)   { ON_FIRE }
