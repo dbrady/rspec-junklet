@@ -23,7 +23,7 @@ describe JunkletUpgradeParser do
         #   parsed_lines = parser.upgraded_lines(lines)
         #   puts '-' * 80
         #   puts lines
-        #   dump_diff output_lines, parser.upgraded_lines(lines)
+        #   dump_diff(output_lines, parser.upgraded_lines(lines))
         #   puts parser.inspect
         # end
       end
