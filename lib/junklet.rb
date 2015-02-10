@@ -20,16 +20,13 @@ module RSpec
       end
 
       def junk(size=32)
-        trash = ""
-        trash += SecureRandom.hex while trash.size < size
-        trash = trash[0...size]
+        # hex returns size*2 digits, because it returns a 0..255 byte
+        # as a hex pair. But when we want junt, we want *bytes* of
+        # junk. Get (size+1)/2 chars, which will be correct for even
+        # sizes and 1 char too many for odds, so trim off with
+        # [0...size] (note three .'s to trim off final char)
+        SecureRandom.hex((size+1)/2)[0...size]
       end
     end
-
-    # class ExampleGroup
-    #   def self.junk
-    #     SecureRandom.hex
-    #   end
-    # end
   end
 end

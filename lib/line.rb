@@ -2,15 +2,15 @@ class Line < String
   def initialize(line="")
     super
   end
-  
+
   def indent
     ' ' * (size - lstrip.size)
   end
-  
+
   def let?
     match(/^\s*let\s*\(/) && !junklet?
   end
-  
+
   def junklet?
      already_junklet? || secure_random?
   end
@@ -18,11 +18,11 @@ class Line < String
   def already_junklet?
     match(/^\s*junklet\b/)
   end
-  
+
   def secure_random?
-    match(/^\s*(let)\s*\(?([^)]*)\)\s*{\s*SecureRandom.uuid\s*}?/)
+    match(/^\s*(let)\s*\(?([^)]*)\)\s*{\s*SecureRandom.(uuid|hex)\s*}/)
   end
-  
+
   def code?
     empty? || (!let? && !junklet?)
   end

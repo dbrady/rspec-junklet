@@ -21,13 +21,6 @@ def dump_captions
   puts '%-80s | %s' % ["EXPECTED", "GOT"]
 end
 
-
-def make_arrays_same_size(got_lines, expected_lines)
-  if got_lines.size > expected_lines.size
-    expected_lines += Array.new(got_lines.size-expected_lines.size, '')
-  end
-end
-
 def dump_header
   dump_hline
   dump_captions
@@ -38,17 +31,15 @@ def dump_footer
 end
 
 def line_pairs(expected_lines, got_lines)
-  make_arrays_same_size(expected_lines, got_lines)
-  expected_lines.zip(got_lines).map { |words| words.map(&:rstrip) }
+  expected_lines.zip(got_lines).map { |words| words.map {|w| w ? w.rstrip : '' } }
 end
 
 def dump_diff(expected_lines, got_lines)
   dump_header
-  
+
   line_pairs(expected_lines, got_lines).each do |a,b|
     color_code = a == b ? GREEN : RED
     puts "#{color_code}%-80s | %s#{RESET}" % [a,b]
   end
   dump_footer
 end
-

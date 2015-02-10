@@ -46,7 +46,8 @@ describe Junklet do
     let(:trash) { junk }
       
     specify { expect(trash).to match hex_regex }
-
+    specify { expect(trash.size).to eq(32) }
+    
     it "is not cached" do
       expect(junk).to_not eq(junk)
     end
