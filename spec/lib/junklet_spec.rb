@@ -8,11 +8,11 @@ describe Junklet do
   describe '.junklet' do
     context "with a single arg" do
       junklet :trash
-      
+
       specify { expect(trash).to be }
       specify { expect(trash).to match /^trash-/ }
       specify { expect(trash).to match hex_regex }
-      
+
       describe "memoization" do
         specify { expect(trash).to eq(trash) }
       end
@@ -44,10 +44,10 @@ describe Junklet do
 
   describe '.junk' do
     let(:trash) { junk }
-      
+
     specify { expect(trash).to match hex_regex }
     specify { expect(trash.size).to eq(32) }
-    
+
     it "is not cached" do
       expect(junk).to_not eq(junk)
     end
@@ -59,7 +59,7 @@ describe Junklet do
     context "with argument" do
       let(:little_trash) { junk 5 }
       let(:big_trash) { junk 100 }
-      
+
       it "returns junk of that length" do
         expect(little_trash.size).to eq(5)
         expect(big_trash.size).to eq(100)
@@ -68,6 +68,14 @@ describe Junklet do
       it "returns hex chars of that length" do
         expect(little_trash).to match /^[\da-f]{5}$/
         expect(big_trash).to match /^[\da-f]{100}$/
+      end
+    end
+
+    context "with type: :decimal" do
+      let(:junk_integer) { junk 15, type: :integer }
+      it "returns the request number of decimal digits" do
+        expect { (widget_id).to be_a Integer }
+        expect { (widget_id.to_s.size).to eq(15) }
       end
     end
   end
