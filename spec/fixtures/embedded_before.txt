@@ -1,0 +1,9 @@
+    let(:first_name)  { "TestBot" }
+    let(:last_name)   { "ID-#{SecureRandom.hex[0..8]}" }
+    let(:address)     { SecureRandom.uuid }
+    let(:city)        { SecureRandom.uuid[0..MAX_CITY_NAME_LENGTH-1] }
+    let(:state)       {     SecureRandom.uuid      }
+    let(:zip)         {SecureRandom.uuid}
+    let(:extra)       { "www.#{SecureRandom.uuid[6..10].com" }
+    let(:pants)       { SecureRandom.hex 32 }
+    let(:other_pants) { SecureRandom.hex(33) }

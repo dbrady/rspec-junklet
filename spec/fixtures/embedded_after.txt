@@ -1,0 +1,8 @@
+    let(:first_name)  { "TestBot" }
+    let(:last_name)   { "ID-#{junk(8)}" }
+    let(:city)        { junk(MAX_CITY_NAME_LENGTH-1) }
+    let(:extra)       { junk(4) }
+    let(:pants)       { junk(64) }
+    let(:other_pants) { junk(66) }
+
+    junklet :address, :state, :zip

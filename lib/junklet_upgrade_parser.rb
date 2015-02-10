@@ -1,4 +1,4 @@
-# What it does: 
+# What it does:
 # Find blocks of mixed lets and "junklets", a special DSL term we use here for
 # junk data. It then rewrites the block so that the lets come first in
 # original order, then a newline, then the junklets in order. So it turns this
@@ -33,7 +33,7 @@ class JunkletUpgradeParser
   INACTIVE = 'inactive'
   MAYBE_ACTIVE = 'maybe_active'
   ACTIVE = 'active'
-  
+
   def initialize
   end
 
@@ -55,33 +55,33 @@ class JunkletUpgradeParser
       case mode
       when inactive
         if current_line.let?
-          lets << current_line
+          lets << parse_line(current_line)
           we_are_maybe_active!
         elsif current_line.junklet?
           junklets << current_line
           we_are_active!
         elsif current_line.code?
-          emitted_lines << current_line
+          emitted_lines << parse_line(current_line)
         end
       when maybe_active
         if current_line.let?
-          lets << current_line
+          lets << parse_line(current_line)
         elsif current_line.junklet?
           junklets << current_line
           we_are_active!
         elsif current_line.code?
-          emitted_lines += lets 
-          emitted_lines << current_line
+          emitted_lines += lets
+          emitted_lines << parse_line(current_line)
           we_are_inactive!
         end
       when active
         if current_line.let?
-          lets << current_line
+          lets << parse_line(current_line)
         elsif current_line.junklet?
           junklets << current_line
         elsif current_line.code?
           emitted_lines += reordered_block
-          emitted_lines << current_line
+          emitted_lines << parse_line(current_line)
           reset
           we_are_inactive!
         end
@@ -92,7 +92,19 @@ class JunkletUpgradeParser
     emitted_lines += reordered_block if active?
     emitted_lines
   end
-  
+
+  def parse_line(line)
+    numeric_range_match = /(\s*)SecureRandom.(hex|uuid)\[(\d+)\.\.(\d+)\](\s*)/
+    range_match = /(\s*)SecureRandom.(hex|uuid)\[(\d+)\.\.(.+?)\](\s*)/
+    simple_match = /(\s*)SecureRandom.(hex|uuid)(\s*)/
+
+    # match these in order--simple match will match all complicated matches.
+    line \
+      .gsub(numeric_range_match) {|s| "#{$1}junk(#{$4.to_i-$3.to_i})#{$5}" } \
+      .gsub(range_match) {|s| "#{$1}junk(#{$4})#{$5}" } \
+      .gsub(simple_match) {|s| "#{$1}junk#{$3}" }
+  end
+
   def reordered_block
     lets << "\n" unless lets.empty? || lets.last == "\n" || junklets.empty?
     lets + sort_junklets
@@ -103,7 +115,7 @@ class JunkletUpgradeParser
     indent = junklets.first.indent
     ["#{indent}junklet #{(junklets.map(&:names).sort * ', ')}\n"]
   end
-  
+
   def imblart_line(line)
     Line.new line
   end
