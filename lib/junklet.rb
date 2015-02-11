@@ -78,11 +78,23 @@ module RSpec
           # available here?
           case type
           when :int
-            # Fun fact: you can get back an arbitrarily large number
-            # by specifying a max value >= 2**62 so that Ruby promotes
-            # it to a BigNum.
-            min = opts[:min] || 0
-            max = (opts[:max] || 2**62-2) + 1
+            # min,max cooperate with size to further constrain it. So
+            # size: 2, min: 30 would be min 30, max 99.
+            if opts[:size]
+              sized_min = 10**(opts[:size]-1)
+              sized_max = 10**opts[:size]-1
+            end
+            explicit_min = opts[:min] || 0
+            explicit_max = (opts[:max] || 2**62-2) + 1
+
+            if sized_min
+              min = [sized_min, explicit_min].max
+              max = [sized_max, explicit_max].min
+            else
+              min = sized_min || explicit_min
+              max = sized_max || explicit_max
+            end
+
             min,max = max,min if min>max
 
             generator = -> { rand(max-min) + min }

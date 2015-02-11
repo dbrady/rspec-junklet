@@ -135,6 +135,14 @@ junk(:int) # returns a random, positive ruby Fixnum between 0 and
 junk(:int, min: 5, max: 9) # returns a number from 5 to 9
 junk(:int, max: 1) # returns 0 or 1
 
+# If you just know how many digits you need, use size:
+
+junk(:int, size: 3) # generates number between 100 and 999
+
+# min and max can further constrain size (but not expand it):
+junk(:int, size: 3, min: 425) # number from 425 to 999
+junk(:int, size: 3, max: 425) # number from 100 to 425
+
 junk(:bool) # returns true or false
 
 junk([:a, :b, :c]) # samples from the Array

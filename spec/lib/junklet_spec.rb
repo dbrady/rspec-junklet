@@ -111,6 +111,11 @@ describe Junklet do
         specify { expect([0,1]).to include(coin) }
       end
 
+      context "with size" do
+        let(:digit) { junk :int, size: 1 }
+        specify { expect(digit).to be < 10 }
+      end
+
       context "with exclude proc" do
         let(:junk_evens) { junk :int, min: 0, max: 10, exclude: ->(x) { x % 2 == 1 } }
         specify { expect(junk_evens % 2).to eq(0) }
