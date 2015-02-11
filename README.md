@@ -119,6 +119,49 @@ This will have the same effect as calling `let` on the named fields
 and setting the fieldname and a 32-byte hex string (a uuid with
 hyphens removed) to be the memoized value.
 
+
+
+# Finer Control / Custom Types
+
+The `junk` method now has MUCH finer-grained control, though this
+hasn't been pushed up to junklet yet.
+
+
+`junk <type> [options]`
+
+```ruby
+junk(:int) # returns a random, positive ruby Fixnum between 0 and
+           # 2**62-1.
+junk(:int, min: 5, max: 9) # returns a number from 5 to 9
+junk(:int, max: 1) # returns 0 or 1
+
+junk(:bool) # returns true or false
+
+junk([:a, :b, :c]) # samples from the Array
+junk(('A'..'Z')) # samples from the range.
+
+# Memory warning: calls to_a on range first, so if you want a number
+# from 100000 to 999999, favor junk(:int, min: 100000, max: 999999)
+# instead.
+
+junk ->{ your_own_random_thing_here }
+
+# Also note that all types also take an `exclude` option, which can be
+# a value, an array, or a proc. These all return even numbers:
+
+junk :int, min: 2, max:   4, exclude: 3
+junk :int, min: 2, max:  10, exclude: [3,5,7,9]
+junk :int, min: 2, max: 100, exclude: ->(x) { x % 2 == 1 }
+
+# And remember that junk is at the same level of precedence as let, so
+# the following ALSO return even numbers:
+
+let(:three) { 3 }
+let(:evens) { junk :int, min: 2, max:   4, exclude: three }
+let(:two_or_four) { junk :int, min: 2, max:   4, exclude: ->(x){ !evens.include?(x) }
+
+```
+
 # TODO
 
 * Formats - The original motivation for Junklet is to encapsulate the

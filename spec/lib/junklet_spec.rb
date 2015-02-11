@@ -71,12 +71,80 @@ describe Junklet do
       end
     end
 
-    context "with type: :decimal" do
-      let(:junk_integer) { junk 15, type: :integer }
-      it "returns the request number of decimal digits" do
-        expect { (widget_id).to be_a Integer }
-        expect { (widget_id.to_s.size).to eq(15) }
+    context "with type: array" do
+      let(:junk_ray) { junk [:a, :b, :c] }
+      it "returns a random element of the array" do
+        expect([:a, :b, :c]).to include(junk_ray)
       end
+
+      context "with excludes" do
+        let(:junk_ray) { junk [:a, :b, :c], exclude: [:a, :b] }
+        specify { expect(junk_ray).to eq(:c) }
+      end
+    end
+
+    context "with type: Proc" do
+      let(:junk_proc) { junk(->{ rand(3) }) }
+      specify { expect([0,1,2]).to include(junk_proc) }
+
+      context "with excludes" do
+        let(:junk_proc) { junk(->{ rand(3) }, exclude: [0,2]) }
+        specify { expect(junk_proc).to eq(1) }
+      end
+    end
+
+    context "with type: enumerable" do
+      let(:junk_list) { junk (0..3) }
+      it "returns a random element of the array" do
+        expect([0,1,2,3]).to include(junk_list)
+      end
+    end
+
+    context "with type: :int" do
+      let(:junk_integer) { junk :int }
+      it "returns a random positive Fixnum" do
+        expect { (junk_integer).to be_a Fixnum }
+      end
+
+      context "with min and max values" do
+        let(:coin) { junk :int, min: 0, max: 1 }
+        specify { expect([0,1]).to include(coin) }
+      end
+
+      context "with exclude proc" do
+        let(:junk_evens) { junk :int, min: 0, max: 10, exclude: ->(x) { x % 2 == 1 } }
+        specify { expect(junk_evens % 2).to eq(0) }
+      end
+    end
+
+    context "with type: :bool" do
+      let(:junk_bool) { junk :bool }
+      specify { expect([true, false]).to include(junk_bool) }
+
+      context "with excludes" do
+        let(:junk_bool) { junk :bool, exclude: true }
+        specify { expect(junk_bool).to eq(false) }
+      end
+    end
+
+    # begin
+    #   $caught_bad_junklet_error = false
+    #   junklet :cheesy_bad_junklet, cheese: true
+    # rescue INVALID_JUNKLET_ERROR => e
+    #   raise "junklet got invalid option" unless e.message == "junklet options must be one of #{VALID_JUNKLET_ARGS.map(&:inspect) * ', '}"
+    #   $caught_bad_junklet_error = true
+    # else
+    #   raise "junklet got an invalid argument but didn't catch it" unless $caught_bad_junklet_error
+    # end
+
+    context "with exclude: val" do
+      let(:heads) { 0 }
+      let(:tails) { 1 }
+      let(:coin_heads) { junk :int, max: 1, exclude: tails }
+      let(:coin_tails) { junk :int, max: 1, exclude: heads }
+
+      specify { expect(coin_heads).to eq(heads) }
+      specify { expect(coin_tails).to eq(tails) }
     end
   end
 end
