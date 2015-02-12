@@ -18,49 +18,269 @@ So,
 * If equality fails we want to be led to the offending field by the
   error message and not just the line number in the stack trace.
 
-# If You Work At CMM
+## Installation
 
-1. junklet means never having to type SecureRandom again.
-1. junklet prepends the field name to make errors easier to read.
-1. junk() returns a 32-byte random hex number, junk(n) returns the
-   same thing, only n bytes long (can be longer than 32)
+Add this line to your application's Gemfile:
 
-Instead of writing this -> write this:
+```ruby
+gem 'junklet'
+```
 
-* `let(:pants) { SecureRandom.uuid }` -> `junklet :pants`
-* `let(:host_name) { "host-name-#{SecureRandom.uuid}" }` -> `junklet :host_name, separator: '-'` (Remember that underscores aren't legal in host names)
-* `let(:bad_number) { SecureRandom.hex[0..7] }` -> `let(:bad_number) { junk 8 }`
-* `let(:website) { "www.#{SecureRandom.hex}.com" }` -> `let(:website) { "www.#{junk}.com }`
+And then execute:
 
+    $ bundle
+
+Or install it yourself as:
+
+    $ gem install junklet
 
 # Usage
 
+junklet adds two keywords to RSpec's DSL: `junklet`, which defines a
+`let` statement containing junk data, and `junk`, which is a method
+that returns many and varied types of junk data. The former is meant
+to be used as part of the DSL to declare pieces of data to be junk,
+while the latter is intended to be used anywhere inside RSpec to
+supply the junk data itself.
+
+To illustrate, these statements are functionally identically:
+
+```ruby
+junklet :pigtruck
+let(:pigtruck) { junk }
+```
+
+## Junklet
+
+`junklet` declares a memoized variable containing random junk.
+
     junklet :var [, :var_2 [...]] [, options_hash]
+
+So, for example,
 
     junklet :first_name
 
 Creates a `let :first_name` with the value of
 `first_name-774030d0f58d4f588c5edddbdc7f9580` (the hex number is a
-uuid without hyphens and will change with each test case, not just
-each test run)
+uuid without hyphens and will change with each test _case_, not just
+each test run).
 
-    junklet :host_name, separator: '-'
+Currently the options hash only gives you control over the variable
+names appear in the junk data, not the junk data itself. For example,
+
+```ruby
+junklet :host_name, separator: '-'
+```
 
 Creates a `let :host_name`, but changes underscores to hyphens in the
 string value,
 e.g. `host-name-774030d0f58d4f588c5edddbdc7f9580`. Useful
 specifically for host names, which cannot have underscores in them.
 
-    junklet :a_a, :b_b, :c_c, separator: '.'
+```ruby
+junklet :a_a, :b_b, :c_c, separator: '.'
+```
 
 Does what it says on the tin: creates 3 items with string values of
-`a.a`, `b.b`, and `c.c` respectively.
+`a.a.774...`, `b.b.1234...`, and `c.c.234abc...` respectively. I don't
+know why you'd need this, but hey, if you do there it is.
+
+## Junk
+
+`junk` returns random junk, which can be finely tuned and fiddled with.
+
+```ruby
+junk
+junk (integer|symbol|enumerable|proc) [options]
+```
+
+By default, just calling `junk` from inside a spec or let block
+returns a random hex string 32 bytes long.
+
+### integer
+
+Give junk an integer argument and it will return that many hexadecimal
+digits of junk data. Note that this is HALF the number of digits
+returned if you were to call `SecureRandom.hex(n)`, because `hex(n)`
+returns n _bytes_, each of which requires two hex digits to
+represent. Since we're more concerned about specific byte lengths,
+`junk(n)` gives you n digits, not n*2 digits representing n bytes.
 
 
-    junk [length=32]
+```ruby
+junk 17 - return 17 bytes of junk data
+```
 
-Can be called from inside a spec or let block, and returns a random
-hex string 32 bytes long (or whatever length you specify)
+### symbol
+
+junk may be given a symbol denoting the type of data to be
+returned. Currently `:int` and `:bool` are the only supported
+types. `junk :bool` merely returns true or false; `junk :int` is
+much more complicated and interesting.
+
+```ruby
+junk :bool # Boring. Well, 50% chance of boring.
+```
+
+
+`junk :int` is the most complicated and/or interesting type of
+junk. It returns a random decimal number, and it has the most options
+such as `size` (number of digits), and `min` and `max` (which sort of
+do what you'd expect).
+
+By default, `junk :int` returns a random number from 0 to the largest
+possible `Fixnum`, which is 2**62-1.
+
+```ruby
+junk :int # return a random integer from 0 to 2**62-1 (maximum size of
+a Fixnum)
+```
+
+`size`, `min` and `max` control the size and bounds of the random
+number.
+
+```ruby
+junk :int, size: 3 # returns a 3-digit decimal from 100 to 999.
+junk :int, max: 10 # returns a random number from 0 to 10.
+junk :int, min: 100 # returns a random number from 100 to 2**62-1.
+```
+
+Note: You can mix size with min or max, but they can only be used to
+further restrict the range, not expand it, because that would change
+the size constraint. So these examples work the way you'd expect:
+
+```ruby
+junk :int, size: 4, min: 2000 # random number 2000-9999
+junk :int, size: 4, max: 2000 # random number 1000-2000
+```
+
+But in these examples, `min` and `max` have no effect:
+
+```ruby
+junk :int, size: 2, min: 0 # nope, still gonna get 10-99
+junk :int, size: 2, max: 200 # nope, still gonna get 10-99
+```
+
+Technically, you can use BOTH `min` and `max` with `size` to constrain
+both bounds of the number, but this effectively makes the `size`
+option redundant. It will work correctly, but if you remove the size
+constraint you'll still get the same exact range:
+
+```ruby
+# Don't do this
+junk :int, size: 3, min: 125, max: 440 # 125-440. size is now redundant.
+```
+
+### Array / Enumerable
+
+If you give junk an `Array`, `Range`, or any other object that
+implements `Enumerable`, it will select an element at random from the
+collection.
+
+```ruby
+junk [1,3,5,7,9] # pick a 1-digit odd number
+junk (1..5).map {|x| x*2-1 } # pick a 1-digit odd number while trying way too hard
+junk (1..9).step(2) # pick a 1-digit odd number, but now I'm just showing off
+```
+
+*IMPORTANT CAVEAT*: the Enumerable forms all use `.to_a.sample` to get
+the random value, and `.to_a` will cheerfully exhaust all the memory
+Ruby has if you use it on a sufficiently large array.
+
+*LESS-IMPORTANT CAVEAT*: Technically anything that can be converted to
+ an array and then sampled can go through here, so `words.split` would
+ do what you want, but remember that hashes get turned into an array
+ of _pairs_, so expect this weirdness if you ask for it:
+
+```ruby
+junk({a: 42, b: 13}) # either [:a, 42] or [:b, 13]
+```
+
+### Proc
+
+When all else fails, it's time to haul out the lambdas, amirite? The
+first argument ot `junk` can be a proc that yields the desired random
+value. Let's get those odd numbers again:
+
+```ruby
+junk ->{ rand(5)*2 + 1 } # 1-digit odd number
+```
+
+### Other Options
+
+### Exclude
+
+Besides the options that `:int` will take, all of the types will
+accept an `exclude` argument. This is useful if you want to generate
+more than one piece of junk data and ensure that they are
+different. The exclude option can be given a single element, an array,
+or an enumerable, and if all that fails you can give it a proc that
+accepts the generated value and returns true if the value should be
+excluded. Let's use all these excludes to generate odd numbers again:
+
+```ruby
+junk :int, min: 1, max: 3, exclude: 2 # stupid, but it works
+junk (1..9), exclude: [2,4,6,8]
+junk (1..9), exclude: (2..8) # okay, only returns 1 or 9 but hey,
+                             # they're both odd
+junk :int, exclude: ->(x) { x % 2 == 0 } # reject even numbers
+```
+But again, the real advantage is being able to avoid collisions:
+
+```ruby
+let(:id1) { junk (0..9) }
+let(:id2) { junk (0..9), exclude: id1 }
+let(:id3) { junk (0..9), exclude: [id1, id2] }
+
+let(:coinflip) { junk :bool }
+let(:otherside) { junk :bool, exclude: coinflip } # Look I never said
+    # all of these were great ideas, I'm just saying you can DO them.
+```
+
+*VERY IMPORTANT CAVEAT* If you exclude all of the possibilities from
+the random key space, junk will cheerfully go into an infinite
+loop.
+
+### Format
+
+Coming soon! I currently have need of the ability to generate decimal
+numbers but then left-pad them with zeros and represent them as
+strings. Can do it with lambdas, but some standard formatting would be
+really nice.
+
+# TODO
+
+* Formats - The original motivation for Junklet is to encapsulate the
+  SecureRandom.uuid code into something meaningful and
+  intention-revealing. However, it only works for strings with no
+  formatting. If you have a field that DOES have a formatting
+  requirement, then you have to fall back on a real `let`
+  statement. I'd like Junklet to be able to provide common formatters
+  and/or accept formatters for fields with special values or
+  formats. So an email address could look like
+  'email-junkuser@#{uuid}.com', or a currency field could contain a
+  random value from $0.00 to $99,999,999.00 (or some other equally
+  reasonable upper limit). A small signed int could contain -128 to
+  127 and even a boolean could contain a random true/false value. You
+  could argue that this starts to lead towards nondeterministic tests
+  but the reality is the started heading there when we first started
+  making calls to SecureRandom. My thinking is that a call to
+  `junklet` could accept an optional hash and/or block that defines a
+  formatter and/or generator, and/or the configuration for Junklet
+  could accept definitions of domain-specific formatters that you want
+  to reuse throughout your project.
+
+* True cucumber features - RSpec is tested with cucumber features that
+  express blocks of RSpec and then evaluate that the specs did what
+  was intended. The existing spec suite merely uses junklets and then
+  tests their side effects.
+
+* RSpec 3.x support - Ideally the mechanism for adding the `junklet`
+  method is the same, but if not then a separate version would be nice
+  for building and testing RSpec 3 vs. 2. We need to support both, but
+  at the time of this writing the most pressing need is for
+  RSpec 2. Remember kids, "Enterprise" means "most of our money comes
+  from the legacy platform".
 
 # Background
 
@@ -118,107 +338,6 @@ junklet :first_name, :last_name, :address, :city, :state, :phone
 This will have the same effect as calling `let` on the named fields
 and setting the fieldname and a 32-byte hex string (a uuid with
 hyphens removed) to be the memoized value.
-
-
-
-# Finer Control / Custom Types
-
-The `junk` method now has MUCH finer-grained control, though this
-hasn't been pushed up to junklet yet.
-
-
-`junk <type> [options]`
-
-```ruby
-junk(:int) # returns a random, positive ruby Fixnum between 0 and
-           # 2**62-1.
-junk(:int, min: 5, max: 9) # returns a number from 5 to 9
-junk(:int, max: 1) # returns 0 or 1
-
-# If you just know how many digits you need, use size:
-
-junk(:int, size: 3) # generates number between 100 and 999
-
-# min and max can further constrain size (but not expand it):
-junk(:int, size: 3, min: 425) # number from 425 to 999
-junk(:int, size: 3, max: 425) # number from 100 to 425
-
-junk(:bool) # returns true or false
-
-junk([:a, :b, :c]) # samples from the Array
-junk(('A'..'Z')) # samples from the range.
-
-# Memory warning: calls to_a on range first, so if you want a number
-# from 100000 to 999999, favor junk(:int, min: 100000, max: 999999)
-# instead.
-
-junk ->{ your_own_random_thing_here }
-
-# Also note that all types also take an `exclude` option, which can be
-# a value, an array, or a proc. These all return even numbers:
-
-junk :int, min: 2, max:   4, exclude: 3
-junk :int, min: 2, max:  10, exclude: [3,5,7,9]
-junk :int, min: 2, max: 100, exclude: ->(x) { x % 2 == 1 }
-
-# And remember that junk is at the same level of precedence as let, so
-# the following ALSO return even numbers:
-
-let(:three) { 3 }
-let(:evens) { junk :int, min: 2, max:   4, exclude: three }
-let(:two_or_four) { junk :int, min: 2, max:   4, exclude: ->(x){ !evens.include?(x) }
-
-```
-
-# TODO
-
-* Formats - The original motivation for Junklet is to encapsulate the
-  SecureRandom.uuid code into something meaningful and
-  intention-revealing. However, it only works for strings with no
-  formatting. If you have a field that DOES have a formatting
-  requirement, then you have to fall back on a real `let`
-  statement. I'd like Junklet to be able to provide common formatters
-  and/or accept formatters for fields with special values or
-  formats. So an email address could look like
-  'email-junkuser@#{uuid}.com', or a currency field could contain a
-  random value from $0.00 to $99,999,999.00 (or some other equally
-  reasonable upper limit). A small signed int could contain -128 to
-  127 and even a boolean could contain a random true/false value. You
-  could argue that this starts to lead towards nondeterministic tests
-  but the reality is the started heading there when we first started
-  making calls to SecureRandom. My thinking is that a call to
-  `junklet` could accept an optional hash and/or block that defines a
-  formatter and/or generator, and/or the configuration for Junklet
-  could accept definitions of domain-specific formatters that you want
-  to reuse throughout your project.
-
-* True cucumber features - RSpec is tested with cucumber features that
-  express blocks of RSpec and then evaluate that the specs did what
-  was intended. The existing spec suite merely uses junklets and then
-  tests their side effects.
-
-* RSpec 3.x support - Ideally the mechanism for adding the `junklet`
-  method is the same, but if not then a separate version would be nice
-  for building and testing RSpec 3 vs. 2. We need to support both, but
-  at the time of this writing the most pressing need is for
-  RSpec 2. Remember kids, "Enterprise" means "most of our money comes
-  from the legacy platform".
-
-## Installation
-
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'junklet'
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install junklet
 
 ## Contributing
 
