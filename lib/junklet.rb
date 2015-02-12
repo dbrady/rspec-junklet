@@ -14,12 +14,11 @@ module RSpec
 
           names = args.map(&:to_s)
 
-          if opts.key?(:separator)
-            names = names.map {|name| name.gsub(/_/, opts[:separator])}
-          end
+          separator = opts[:separator] || '_'
+          names = names.map {|name| name.gsub(/_/, separator)}
 
           args.zip(names).each do |arg, name|
-            let(arg) { "#{name}-#{junk}" }
+            let(arg) { "#{name}#{separator}#{junk}" }
           end
         end
       end

@@ -10,7 +10,7 @@ describe Junklet do
       junklet :trash
 
       specify { expect(trash).to be }
-      specify { expect(trash).to match /^trash-/ }
+      specify { expect(trash).to match /^trash_/ }
       specify { expect(trash).to match hex_regex }
 
       describe "memoization" do
@@ -21,23 +21,24 @@ describe Junklet do
     context "with multiple args" do
       junklet :trash, :toss, :crud, :crap
 
-      specify { expect(trash).to match /^trash-/ }
+      specify { expect(trash).to match /^trash_/ }
       specify { expect(trash).to match hex_regex }
-      specify { expect(toss).to match /^toss-/ }
+      specify { expect(toss).to match /^toss_/ }
       specify { expect(toss).to match hex_regex }
-      specify { expect(crud).to match /^crud-/ }
+      specify { expect(crud).to match /^crud_/ }
       specify { expect(crud).to match hex_regex }
-      specify { expect(crap).to match /^crap-/ }
+      specify { expect(crap).to match /^crap_/ }
       specify { expect(crap).to match hex_regex }
     end
 
     context 'with separator option' do
-      junklet :host_name, :last_name, :first_name, separator: '-'
+      junklet :host_name, separator: '-'
+      junklet :last_name, :first_name, separator: '.'
       specify { expect(host_name).to match /^host-name-/ }
       specify { expect(host_name).to match hex_regex }
-      specify { expect(last_name).to match /^last-name-/ }
+      specify { expect(last_name).to match /^last\.name\./ }
       specify { expect(last_name).to match hex_regex }
-      specify { expect(first_name).to match /^first-name-/ }
+      specify { expect(first_name).to match /^first\.name\./ }
       specify { expect(first_name).to match hex_regex }
     end
   end
