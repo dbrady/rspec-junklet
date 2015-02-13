@@ -153,4 +153,11 @@ describe Junklet do
       specify { expect(coin_tails).to eq(tails) }
     end
   end
+
+  context "metaprogramming use cases" do
+    metaname = junk
+    describe "works by allowing junk to be set from an ExampleGroup outside of an ExampleCase" do
+      specify { expect(metaname).to be }
+    end
+  end
 end

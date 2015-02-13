@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    junklet (1.0.3)
+    junklet (1.0.4)
 
 GEM
   remote: https://rubygems.org/
