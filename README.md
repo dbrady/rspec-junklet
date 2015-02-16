@@ -258,6 +258,11 @@ lambdas, but some standard formatting would be really nice.
   configuration for Junklet could accept definitions of domain-specific
   formatters that you want to reuse throughout your project.
 
+* Allow all args to junk to be passed to junklet. Use explicit `type` option to
+  specify the type. E.g. `junklet :foo, :bar, :baz, type: :int, max: 14,
+  exclude: [:qaz, :qux]`. _(Do we want to allow a flag for mutually exclusive?)_
+
+
 * True cucumber features - RSpec is tested with cucumber features that express
   blocks of RSpec and then evaluate that the specs did what was intended. The
   existing spec suite merely uses junklets and then tests their side effects.

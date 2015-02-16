@@ -57,11 +57,11 @@ describe Junklet do
       expect(trash).to eq(trash)
     end
 
-    context "with argument" do
+    context "with integer argument" do
       let(:little_trash) { junk 5 }
       let(:big_trash) { junk 100 }
 
-      it "returns junk of that length" do
+      it "sizes junk to that many characters" do
         expect(little_trash.size).to eq(5)
         expect(big_trash.size).to eq(100)
       end
@@ -152,6 +152,16 @@ describe Junklet do
       specify { expect(coin_heads).to eq(heads) }
       specify { expect(coin_tails).to eq(tails) }
     end
+
+    # TODO: Formats here
+
+    # format: :string -> calls .to_s
+    # format: "format_string" -> calls sprintf(junkval, format_string)
+    # format: Klass -> passes junkval to Klass.new
+    # format: Proc -> passes junkval to Proc
+    #
+    # format: with exclude: - runs exclude AFTER running format. This is the whole point of formatters; it allows us to say junk().to_s, exclude: :otherval
+
   end
 
   context "metaprogramming use cases" do
