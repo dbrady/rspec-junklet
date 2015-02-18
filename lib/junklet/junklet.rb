@@ -14,8 +14,12 @@ module Junklet
       names = names.map {|name| name.gsub(/_/, separator)}
 
       args.zip(names).each do |arg, name|
-        let(arg) { "#{name}#{separator}#{junk}" }
+        make_junklet arg, name, separator, junk
       end
+    end
+
+    def make_junklet(let_name, name, separator, junk_data)
+      let(let_name) { "#{name}#{separator}#{junk_data}" }
     end
   end
 end
