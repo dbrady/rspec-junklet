@@ -1,3 +1,4 @@
+require 'spec_helper'
 require_relative '../../../lib/junklet/junk'
 
 class JunkSpy
@@ -90,4 +91,62 @@ describe JunkSpy do
     end
   end
 
+  context "with format option" do
+    context "when format is :string" do
+      let(:junk) { subject.junk :int, max: 0, format: :string }
+
+      specify { expect(junk).to eq("0") }
+    end
+
+    context "when format is :int" do
+      let(:junk) { subject.junk ["42"], format: :int }
+
+      specify { expect(junk).to be_kind_of(Integer) }
+      specify { expect(junk).to eq(42) }
+    end
+
+    context "when format is a format string" do
+      let(:junk) { subject.junk [15], format: "0x%02x" }
+
+      it "formats the value by the string" do
+        expect(junk).to eq("0x0f")
+      end
+    end
+
+    context "when format is a class" do
+      class Doubler
+        def initialize(n)
+          @n = n
+        end
+        def value
+          @n * 2
+        end
+      end
+
+      let(:junk) { subject.junk [3], format: Doubler }
+
+      it "instantiates class with junk value" do
+        expect(junk).to be_kind_of(Doubler)
+        expect(junk.value).to eq(6)
+      end
+    end
+
+    context "when format is a Proc" do
+      let(:junk) { subject.junk [3], format: ->(x) { x * 3 } }
+
+      it "calls proc on junk value" do
+        expect(junk).to eq(9)
+      end
+    end
+
+    context "when format and exclude are used together" do
+      let(:truth) { subject.junk :bool, format: :string, exclude: "false" }
+      let(:lies) { subject.junk :bool, format: :string, exclude: truth }
+
+      specify "it just works" do
+        expect(truth).to eq("true")
+        expect(lies).to eq("false")
+      end
+    end
+  end
 end

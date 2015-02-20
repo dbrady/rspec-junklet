@@ -34,10 +34,11 @@ module Junklet
       # FIXME: Figure out what our valid options are and parse them;
       #        raise errors if present.
 
-      classes = [Symbol, Array, Enumerable, Proc]
-      if args.size > 0 && classes.any? {|klass| args.first.is_a?(klass) }
+      junk_types = [Symbol, Array, Enumerable, Proc]
+      if args.size > 0 && junk_types.any? {|klass| args.first.is_a?(klass) }
         type = args.shift
         opts = args.last || {}
+
         excluder = if opts[:exclude]
                      if opts[:exclude].is_a?(Proc)
                        opts[:exclude]
@@ -47,6 +48,21 @@ module Junklet
                    else
                      ->(x) { false }
                    end
+
+        formatter = case opts[:format]
+                    when :string
+                      ->(x) { x.to_s }
+                    when :int
+                      ->(x) { x.to_i }
+                    when String
+                      ->(x) { sprintf(opts[:format], x) }
+                    when Class
+                      ->(x) { opts[:format].new(x) }
+                    when Proc
+                      opts[:format]
+                    else
+                      ->(x) { x }
+                    end
 
         # TODO: Refactor me. Seriously, this is a functional
         # programming version of the strategy pattern. Wouldn't it
@@ -85,7 +101,7 @@ module Junklet
         end
 
         begin
-          val = generator.call
+          val = formatter.call(generator.call)
         end while excluder.call(val)
         val
       else
