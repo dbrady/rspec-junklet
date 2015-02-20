@@ -4,10 +4,10 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'junklet/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "junklet"
+  spec.name          = "rspec-junklet"
   spec.version       = Junklet::VERSION
-  spec.authors       = ["Dave Brady"]
-  spec.email         = ["dbrady@covermymeds.com"]
+  spec.authors       = ["David Brady"]
+  spec.email         = ["dbrady@shinybit.com"]
   spec.summary       = "Easily create junk data for specs"
   spec.description   = "Works like let for rspec, but creates unique random junk data"
   spec.homepage      = ""

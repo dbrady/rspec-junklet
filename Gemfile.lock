@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    junklet (1.0.4)
+    rspec-junklet (1.0.4)
 
 GEM
   remote: https://rubygems.org/
@@ -41,7 +41,7 @@ PLATFORMS
 DEPENDENCIES
   bundler (~> 1.7)
   cucumber
-  junklet!
   pry
   rake (~> 10.0)
   rspec (~> 2.0)
+  rspec-junklet!

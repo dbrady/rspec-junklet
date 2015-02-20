@@ -22,7 +22,7 @@ So,
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'junklet'
+gem 'rspec-junklet'
 ```
 
 And then execute:
@@ -31,7 +31,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install junklet
+    $ gem install rspec-junklet
 
 # Usage
 
@@ -232,40 +232,23 @@ key space, junk will cheerfully go into an infinite loop.
 
 ### Format
 
-Coming soon! I currently have need of the ability to generate decimal numbers
-but then left-pad them with zeros and represent them as strings. Can do it with
-lambdas, but some standard formatting would be really nice.
+Formats are here, but need documentating! For now: `format: :int` will cast your
+junk to an integer by calling `.to_i` on it. Other formats include:
+
+* `format: :int` calls `.to_i` on the junk before returning it
+* `format: :string` calls `.to_s` on the junk
+* `format: "%s"` (or any other string) calls sprintf on the junk with the
+  string as the format string
+* `format: SomeClass` passes the junk to `SomeClass.new`, returning an instance
+  of `SomeClass`. *Note:* If you plan on combining this with `exclude`, make
+  sure your class implements the `==` operator.
+* `format: ->(x) { ... }` passes the junk to your Proc
 
 # TODO
-
-* Rename gem to rspec-junklet to match all the other rspec plugin gems out
-  there.
-
-* Formats - The original motivation for Junklet is to encapsulate the
-  SecureRandom.uuid code into something meaningful and
-  intention-revealing. However, it only works for strings with no formatting. If
-  you have a field that DOES have a formatting requirement, then you have to
-  fall back on a real `let` statement. I'd like Junklet to be able to provide
-  common formatters and/or accept formatters for fields with special values or
-  formats. So an email address could look like 'email-junkuser@#{uuid}.com', or
-  a currency field could contain a random value from $0.00 to $99,999,999.00 (or
-  some other equally reasonable upper limit). A small signed int could contain
-  -128 to 127 and even a boolean could contain a random true/false value. You
-  could argue that this starts to lead towards nondeterministic tests but the
-  reality is the started heading there when we first started making calls to
-  SecureRandom. My thinking is that a call to `junklet` could accept an optional
-  hash and/or block that defines a formatter and/or generator, and/or the
-  configuration for Junklet could accept definitions of domain-specific
-  formatters that you want to reuse throughout your project.
 
 * Allow all args to junk to be passed to junklet. Use explicit `type` option to
   specify the type. E.g. `junklet :foo, :bar, :baz, type: :int, max: 14,
   exclude: [:qaz, :qux]`. _(Do we want to allow a flag for mutually exclusive?)_
-
-
-* True cucumber features - RSpec is tested with cucumber features that express
-  blocks of RSpec and then evaluate that the specs did what was intended. The
-  existing spec suite merely uses junklets and then tests their side effects.
 
 # Background
 
