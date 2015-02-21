@@ -232,8 +232,20 @@ key space, junk will cheerfully go into an infinite loop.
 
 ### Format
 
-Formats are here, but need documentating! For now: `format: :int` will cast your
-junk to an integer by calling `.to_i` on it. Other formats include:
+A format can be applied to junk data after generation. This lets you change the
+class or representation of the junk. For example, this feature was added because
+we needed 6-digit decimal ids... represented as strings. Originally I wrote
+
+```ruby
+let(:drug_id) { junk( ->{ junk(:int, size: 6).to_s } ) }
+```
+
+But now I can just say
+
+```ruby
+let(:drug_id) { junk(:int, size: 6, format: :string) }
+```
+Here are the available formats:
 
 * `format: :int` calls `.to_i` on the junk before returning it
 * `format: :string` calls `.to_s` on the junk
@@ -242,7 +254,64 @@ junk to an integer by calling `.to_i` on it. Other formats include:
 * `format: SomeClass` passes the junk to `SomeClass.new`, returning an instance
   of `SomeClass`. *Note:* If you plan on combining this with `exclude`, make
   sure your class implements the `==` operator.
-* `format: ->(x) { ... }` passes the junk to your Proc
+* `format: ->(x) { ... }` passes the junk to your Proc; whatever you return is
+  the value of the junk. This is obviously the most powerful transform as it can
+  return anything at all; there's nothing stopping you from using the format
+  proc as the generator itself aside from the constraints of good taste. ;-) If
+  you _were_ to exhibit poor taste, one conceivable (yet still very strained)
+  example might be `junk :int, format: ->(x) { srand(x); rand }` but it's not
+  really a very far stretch to generate, say, a random index in the generator
+  and use the formatter to map it to a dictionary word or some other very wild
+  transformation.
+
+### Formatter Classes
+
+The careful reader will have noted by now that you can pass a class name as a
+format. This is intended to be a Formatter class. A Formatter class takes the
+generated junk in its initialize method. If the class implements `#format`, this
+method will be called and the return value of this method will be the junk
+data. If the class does not implement `#format`, the Formatter object itself
+will be returned and you can use it how you see fit. It's probably a good idea
+to implement `#to_s` if your formatter is going to wind up in a string
+somewhere.
+
+So for example, let's say you want to generate a ZIP+4 code. That's a 5-digit
+decimal number, a hyphen, and a 4-digit decimal. This whole mess is then
+represented as a string. You could do this with a simple lambda:
+
+```ruby
+let(:zip) { junk :int, size: 9, format: ->(x) { '%d-%d' % [x/10000, x%10000] } }
+```
+
+...but if you're going to be generating ZIP codes regularly, a formatter class
+is probably in order:
+
+```ruby
+class Format::ZipCode
+  attr_reader :code
+  def initialize(code)
+    @code = code
+  end
+
+  def format
+    '%d-%d' % [x/10000, x%10000]
+  end
+end
+```
+
+Now your junk uses the class as designed:
+
+```ruby
+let(:zip) { junk :int, size: 9, format: Format::ZipCode }
+```
+
+TODO: Hrm, if I'm going to do to that much trouble, why not have an entire junk
+generation class? E.g. include the generator with the formatter, so that we can
+just say
+
+```ruby
+let(:zip) { junk ZipCode }
+```
 
 # TODO
 

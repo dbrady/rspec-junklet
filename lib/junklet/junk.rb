@@ -26,6 +26,26 @@ module Junklet
       #     the Proc an excludes it if the Proc returns true. This
       #     is implemented except for the proc.
 
+      # FIXME: Would be nice to be able to say, e.g. `junk exclude: bob` but
+      #        currently this breaks because {exclude: bob} is a Hash which is
+      #        an Enumerable which means it's a valid generator. I don't want to
+      #        just disallow hashes as generators here. What's a good workaround
+      #        for when I really do just want junk with either a format or an
+      #        exclusion? `junk :junk, exclude: bob` looks bad. `junk _,
+      #        exclude: bob` is also pretty bad.
+      #
+      #        Hmm, I'm tempted to say "the one enumerable you CAN'T have is a
+      #        Hash, so it can be the options hash; if you DO want to pass in a
+      #        hash, you must cast it to an array or yield it from a Proc
+      #        instead". Given that the hash case is weird and rare enough, I
+      #        think this is acceptable. Oh, if only I didn't have to maintain
+      #        backwards compatibility with older Rubies, I could just make
+      #        these keyword args. Sigh.
+
+      # FIXME: This whole darn method is outta control, and for the record none
+      #        of the cool excluders and formatters work with the
+      #        SecureRandom.hex default. Barf.
+
       # FIXME: Raise Argument error unless *args.size is 0-2
       # FIXME: If arg 1 is a hash, it's the options hash, raise
       #        ArgumentError unless args.size == 1
