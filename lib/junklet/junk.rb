@@ -1,3 +1,5 @@
+require_relative 'formatter'
+
 module Junklet
   module Junk
     def junk(*args)
@@ -74,10 +76,12 @@ module Junklet
                       ->(x) { x.to_s }
                     when :int
                       ->(x) { x.to_i }
+                    when Class
+                      raise "Formatter class must implement #format method" unless
+                        opts[:format].new(0).respond_to? :format
+                      ->(x) { opts[:format].new(x).format }
                     when String
                       ->(x) { sprintf(opts[:format], x) }
-                    when Class
-                      ->(x) { opts[:format].new(x) }
                     when Proc
                       opts[:format]
                     else

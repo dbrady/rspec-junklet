@@ -113,23 +113,62 @@ describe JunkSpy do
       end
     end
 
-    context "when format is a class" do
-      class Doubler
-        def initialize(n)
-          @n = n
+    context "when format is a Junklet::Formatter" do
+      class HexTripler < Junklet::Formatter
+        def value
+          input * 3
         end
+
+        def format
+          "0x%02x" % value
+        end
+      end
+
+      let(:junk) { subject.junk [4], format: HexTripler }
+
+      it "delegates to #format" do
+        expect(junk).to be_kind_of(String)
+        expect(junk).to eq("0x0c")
+      end
+    end
+
+    context "when format is a class that quacks like Junklet::Formatter" do
+      class HexDoubler
+        def initialize(input)
+          @n = input
+        end
+
         def value
           @n * 2
         end
+
+        def format
+          "0x%04x" % value
+        end
       end
 
-      let(:junk) { subject.junk [3], format: Doubler }
+      let(:junk) { subject.junk [12], format: HexDoubler }
 
-      it "instantiates class with junk value" do
-        expect(junk).to be_kind_of(Doubler)
-        expect(junk.value).to eq(6)
+      it "works as expected" do
+        expect(junk).to be_kind_of(String)
+        expect(junk).to eq("0x0018")
       end
     end
+
+    context "but does not implement #value" do
+      class BadDoublerNoFormat
+        def initialize(input)
+        end
+
+        def value
+        end
+      end
+
+      let(:junk) { subject.junk [2], format: BadDoublerNoFormat }
+
+      specify { expect { junk }.to raise_error("Formatter class must implement #format method") }
+    end
+
 
     context "when format is a Proc" do
       let(:junk) { subject.junk [3], format: ->(x) { x * 3 } }

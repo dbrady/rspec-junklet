@@ -252,8 +252,9 @@ Here are the available formats:
 * `format: "%s"` (or any other string) calls sprintf on the junk with the
   string as the format string
 * `format: SomeClass` passes the junk to `SomeClass.new`, returning an instance
-  of `SomeClass`. *Note:* If you plan on combining this with `exclude`, make
-  sure your class implements the `==` operator.
+  of `SomeClass`. *Important:* This class must implement a `#format` method
+  which returns the formatted junk. See the `::Junklet::Formatter` class for an
+  example class that simply returns the unmodified junk.
 * `format: ->(x) { ... }` passes the junk to your Proc; whatever you return is
   the value of the junk. This is obviously the most powerful transform as it can
   return anything at all; there's nothing stopping you from using the format

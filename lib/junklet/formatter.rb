@@ -7,13 +7,8 @@ module Junklet
     end
 
     # You probably want to override this
-    def value
-      @input
-    end
-
-    # You probably want to override this
     def format
-      value
+      input
     end
   end
 end
