@@ -1,7 +1,12 @@
 require 'spec_helper'
 
-describe Junklet do
-  specify { expect(Junklet).to be }
+# This spec file is a documentation/example spec showing how various ways to use
+# Junklet. It was the original spec before I extracted out the classes of
+# Junklet, but still serves as a functional, high-level spec plus it's a good
+# collection of examples so here you go.
+
+describe RSpec::Junklet do
+  specify { expect(subject).to be }
 
   let(:hex_regex) { /[\da-f]{32}/ }
 

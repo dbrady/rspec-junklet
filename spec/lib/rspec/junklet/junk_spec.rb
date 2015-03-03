@@ -1,10 +1,10 @@
 require 'spec_helper'
-require_relative '../../../lib/junklet/junk'
+require PROJECT_ROOT + 'lib/rspec/junklet/junk'
 
 class JunkSpy
   attr_reader :lets
 
-  include ::Junklet::Junk
+  include ::RSpec::Junklet::Junk
 end
 
 describe JunkSpy do
@@ -114,7 +114,7 @@ describe JunkSpy do
     end
 
     context "when format is a Junklet::Formatter" do
-      class HexTripler < Junklet::Formatter
+      class HexTripler < RSpec::Junklet::Formatter
         def value
           input * 3
         end

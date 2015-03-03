@@ -1,9 +1,9 @@
-require_relative '../../../lib/junklet/junklet'
+require PROJECT_ROOT + 'lib/rspec/junklet/junklet'
 
 class JunkletSpy
   attr_reader :lets
 
-  include ::Junklet::Junklet
+  include ::RSpec::Junklet::Junklet
 
   def let(*args)
     @lets = args

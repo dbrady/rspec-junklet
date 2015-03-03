@@ -1,16 +1,16 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'junklet/version'
+require 'rspec/junklet/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "rspec-junklet"
-  spec.version       = Junklet::VERSION
+  spec.version       = RSpec::Junklet::VERSION
   spec.authors       = ["David Brady"]
   spec.email         = ["dbrady@shinybit.com"]
   spec.summary       = "Easily create junk data for specs"
   spec.description   = "Works like let for rspec, but creates unique random junk data"
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/dbrady/rspec-junklet"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
@@ -21,6 +21,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 2.0"
-  spec.add_development_dependency "cucumber"
-  spec.add_development_dependency "pry"
+  spec.add_development_dependency "pry", "~> 0.10"
 end
