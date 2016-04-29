@@ -1,13 +1,10 @@
 require 'spec_helper'
 
-# This spec file is a documentation/example spec showing how various ways to use
-# Junklet. It was the original spec before I extracted out the classes of
-# Junklet, but still serves as a functional, high-level spec plus it's a good
-# collection of examples so here you go.
+# Because rspec-junklet extends RSpec, this spec file actually EXERCISES
+# rspec-junklet instead of testing it directly. You can treat it like a list of
+# examples or a cheatsheet for how to try things.
 
 describe RSpec::Junklet do
-  specify { expect(subject).to be }
-
   let(:hex_regex) { /[\da-f]{32}/ }
 
   describe '.junklet' do
