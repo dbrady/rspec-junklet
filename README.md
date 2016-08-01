@@ -231,6 +231,21 @@ let(:otherside) { junk :bool, exclude: coinflip } # Look I never said
 *VERY IMPORTANT CAVEAT* If you exclude all of the possibilities from the random
 key space, junk will cheerfully go into an infinite loop.
 
+### Size
+
+Size constrains the size of the output. It works differently depending on the
+type of junk:
+
+* Number of Digits: as documented above, `junk :int, size: 4` will return a
+4-digit number beginning with 1-9.
+* Number of Repetitions: For Enumerable and Array junk, where the value of the
+junk is obtained by picking an element at random, size will make junk return an
+array containing that many random selections. The same goes for proc, only it
+will be called that number of times. Note that excluders and formatters will be
+applied to each element of the array as well.
+
+
+
 ### Format
 
 A format can be applied to junk data after generation. This lets you change the
