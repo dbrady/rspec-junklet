@@ -61,8 +61,7 @@ module RSpec
         # FIXME: Figure out what our valid options are and parse them;
         #        raise errors if present.
 
-
-       junk_types = [Symbol, Array, Enumerable, Proc]
+        junk_types = [Symbol, Array, Enumerable, Proc]
         if args.size > 0 && junk_types.any? {|klass| args.first.is_a?(klass) }
           type = args.shift
           opts = args.last || {}
