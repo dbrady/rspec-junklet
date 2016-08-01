@@ -52,12 +52,17 @@ module RSpec
         # FIXME: Raise Argument error unless *args.size is 0-2
         # FIXME: If arg 1 is a hash, it's the options hash, raise
         #        ArgumentError unless args.size == 1
+
+        # TODO: Nice-to-have feature: if args.second is an :int, assume size.
+
         # FIXME: If arg 2 present, Raise Argument error unless it's a
         #        hash.
+
         # FIXME: Figure out what our valid options are and parse them;
         #        raise errors if present.
 
-        junk_types = [Symbol, Array, Enumerable, Proc]
+
+       junk_types = [Symbol, Array, Enumerable, Proc]
         if args.size > 0 && junk_types.any? {|klass| args.first.is_a?(klass) }
           type = args.shift
           opts = args.last || {}
@@ -132,7 +137,7 @@ module RSpec
         else
           size = args.first.is_a?(Numeric) ? args.first : 32
           # hex returns size*2 digits, because it returns a 0..255 byte
-          # as a hex pair. But when we want junt, we want *bytes* of
+          # as a hex pair. But when we want junk, we want *bytes* of
           # junk. Get (size+1)/2 chars, which will be correct for even
           # sizes and 1 char too many for odds, so trim off with
           # [0...size] (note three .'s to trim off final char)

@@ -100,6 +100,14 @@ describe RSpec::Junklet do
         let(:junk_range) { junk 'a'..'c', exclude: ['a', 'b'] }
         specify { expect(junk_range).to eq('c') }
       end
+
+      # TODO: Add the size feature after we commit to common formatting in junklet 3.0
+      # context "with size" do
+      #   let(:junk_range) { junk 'a'..'c', size: 2 }
+      #   it "returns a consecutive string of the array elements from range" do
+      #     expect(junk_range).to match(/[abc]{2}/)
+      #   end
+      # end
     end
 
     context "with type: Proc" do
