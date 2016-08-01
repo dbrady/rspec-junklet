@@ -170,6 +170,11 @@ describe JunkSpy do
     end
 
 
+    # BUG: this special case of format does not work:
+    # doubled_string = junk 6, format: ->(x) { x * 2 })
+    # expect(doubled_string.size).to eq(12) # nope, it's 6
+    # junk 6, format: ->(x) { x.upcase } # also returns x unmodified
+
     context "when format is a Proc" do
       let(:junk) { subject.junk [3], format: ->(x) { x * 3 } }
 
