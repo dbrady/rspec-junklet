@@ -7,7 +7,8 @@ or `junk 4`.
 Junklet data is fixture data that:
 
 * We essentially don't care about,
-* But we might want to test for equality somewhere later,
+* But we might need it to conform to a certain format,
+* And we might want to test for equality somewhere later,
 * And we might need to be unique between runs in case a spec crashes and
 SQLServer fails to clean up the test database
 
