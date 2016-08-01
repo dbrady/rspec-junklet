@@ -23,6 +23,10 @@ describe RSpec::Junklet do
     context "with multiple args" do
       junklet :trash, :toss, :crud, :crap
 
+      # FIXME: if we were to stub out junk here, these examples
+      # could be changed to read
+      # expect(trash).to eq("trash_1234567809etc")
+      # which would document the output MUCH more clearly
       specify { expect(trash).to match /^trash_/ }
       specify { expect(trash).to match hex_regex }
       specify { expect(toss).to match /^toss_/ }
@@ -83,6 +87,18 @@ describe RSpec::Junklet do
       context "with excludes" do
         let(:junk_ray) { junk [:a, :b, :c], exclude: [:a, :b] }
         specify { expect(junk_ray).to eq(:c) }
+      end
+    end
+
+    context "with type: range" do
+      let(:junk_range) { junk 'a'..'c' }
+      it "returns a random element of the range" do
+        expect(%w[a b c]).to include(junk_range)
+      end
+
+      context "with excludes" do
+        let(:junk_range) { junk 'a'..'c', exclude: ['a', 'b'] }
+        specify { expect(junk_range).to eq('c') }
       end
     end
 
