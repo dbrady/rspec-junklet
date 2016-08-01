@@ -61,6 +61,7 @@ module RSpec
         # FIXME: Figure out what our valid options are and parse them;
         #        raise errors if present.
 
+        repeat = 0
         junk_types = [Symbol, Array, Enumerable, Proc]
         if args.size > 0 && junk_types.any? {|klass| args.first.is_a?(klass) }
           type = args.shift
@@ -122,16 +123,22 @@ module RSpec
           when :bool
             generator = -> { [true, false].sample }
           when Array, Enumerable
+            repeat = opts[:size] if opts[:size]
             generator = -> { type.to_a.sample }
           when Proc
+            repeat = opts[:size] if opts[:size]
             generator = type
           else
             raise "Unrecognized junk type: '#{type}'"
           end
 
-          begin
-            val = formatter.call(generator.call)
-          end while excluder.call(val)
+          val = if repeat.zero?
+                  value(generator, formatter, excluder)
+                else
+                  repeat.times.map {
+                    value(generator, formatter, excluder)
+                  }
+                end
           val
         else
           size = args.first.is_a?(Numeric) ? args.first : 32
@@ -142,6 +149,15 @@ module RSpec
           # [0...size] (note three .'s to trim off final char)
           SecureRandom.hex((size+1)/2)[0...size]
         end
+      end
+
+      private
+
+      def value(generator, formatter, excluder)
+        begin
+          v = formatter.call(generator.call)
+        end while excluder.call(v)
+        v
       end
     end
   end

@@ -78,52 +78,61 @@ describe RSpec::Junklet do
       end
     end
 
-    context "with type: array" do
-      let(:junk_ray) { junk [:a, :b, :c] }
-      it "returns a random element of the array" do
-        expect([:a, :b, :c]).to include(junk_ray)
+    shared_examples_for "repeatable junk" do
+      it "returns an array" do
+        expect(subject).to be_a(Array)
       end
 
-      context "with excludes" do
-        let(:junk_ray) { junk [:a, :b, :c], exclude: [:a, :b] }
-        specify { expect(junk_ray).to eq(:c) }
+      it "returns an array of that size" do
+        expect(subject.size).to eq(3)
+      end
+
+      it "each element of the array is junk" do
+        expect(subject.all? {|i| [0,1,2].include? i}).to be_truthy
       end
     end
 
-    context "with type: range" do
-      let(:junk_range) { junk 'a'..'c' }
-      it "returns a random element of the range" do
-        expect(%w[a b c]).to include(junk_range)
+    context "with type: array" do
+      subject { junk [:a, :b, :c] }
+      it "returns a random element of the array" do
+        expect([:a, :b, :c]).to include(subject)
       end
 
       context "with excludes" do
-        let(:junk_range) { junk 'a'..'c', exclude: ['a', 'b'] }
-        specify { expect(junk_range).to eq('c') }
+        let(:subject) { junk [:a, :b, :c], exclude: [:a, :b] }
+        it "does not return excluded values" do
+          expect(subject).to eq(:c)
+        end
       end
 
-      # TODO: Add the size feature after we commit to common formatting in junklet 3.0
-      # context "with size" do
-      #   let(:junk_range) { junk 'a'..'c', size: 2 }
-      #   it "returns a consecutive string of the array elements from range" do
-      #     expect(junk_range).to match(/[abc]{2}/)
-      #   end
-      # end
+      context "with size" do
+        subject { junk [0, 1, 2], size: 3 }
+        it_behaves_like "repeatable junk"
+      end
     end
 
     context "with type: Proc" do
-      let(:junk_proc) { junk(->{ rand(3) }) }
-      specify { expect([0,1,2]).to include(junk_proc) }
+      subject { junk(->{ rand(3) }) }
+      it "calls the proc" do
+        expect([0, 1, 2]).to include(subject)
+      end
 
-      context "with excludes" do
-        let(:junk_proc) { junk(->{ rand(3) }, exclude: [0,2]) }
-        specify { expect(junk_proc).to eq(1) }
+      context "with size" do
+        subject { junk(->{ rand(3) }, size: 3 ) }
+        it_behaves_like "repeatable junk"
       end
     end
 
     context "with type: enumerable" do
-      let(:junk_list) { junk (0..3) }
-      it "returns a random element of the array" do
-        expect([0,1,2,3]).to include(junk_list)
+      subject { junk 0..2 }
+
+      it "takes a sample from the enumerable" do
+        expect([0,1,2]).to include(subject)
+      end
+
+      context "with size" do
+        subject { junk 0..2, size: 3 }
+        it_behaves_like "repeatable junk"
       end
     end
 
