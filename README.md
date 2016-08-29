@@ -269,8 +269,8 @@ Here are the available formats:
   string as the format string
 * `format: SomeClass` passes the junk to `SomeClass.new`, returning an instance
   of `SomeClass`. *Important:* This class must implement a `#format` method
-  which returns the formatted junk. See the `::Junklet::Formatter` class for an
-  example class that simply returns the unmodified junk.
+  which returns the formatted junk. See the `::RSpec::Junklet::Formatter` class
+  for an example class that simply returns the unmodified junk.
 * `format: ->(x) { ... }` passes the junk to your Proc; whatever you return is
   the value of the junk. This is obviously the most powerful transform as it can
   return anything at all; there's nothing stopping you from using the format
