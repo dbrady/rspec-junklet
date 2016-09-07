@@ -15,8 +15,8 @@ describe RSpec::Junklet do
       specify { expect(trash).to match /^trash_/ }
       specify { expect(trash).to match hex_regex }
 
-      describe "memoization" do
-        specify { expect(trash).to eq(trash) }
+      it "memoizes so subsequent calls do not change" do
+        expect(trash).to eq(trash)
       end
     end
 
@@ -168,16 +168,6 @@ describe RSpec::Junklet do
       end
     end
 
-    # begin
-    #   $caught_bad_junklet_error = false
-    #   junklet :cheesy_bad_junklet, cheese: true
-    # rescue INVALID_JUNKLET_ERROR => e
-    #   raise "junklet got invalid option" unless e.message == "junklet options must be one of #{VALID_JUNKLET_ARGS.map(&:inspect) * ', '}"
-    #   $caught_bad_junklet_error = true
-    # else
-    #   raise "junklet got an invalid argument but didn't catch it" unless $caught_bad_junklet_error
-    # end
-
     context "with exclude: val" do
       let(:heads) { 0 }
       let(:tails) { 1 }
@@ -194,6 +184,7 @@ describe RSpec::Junklet do
     # format: "format_string" -> calls sprintf(junkval, format_string)
     # format: Klass -> passes junkval to Klass.new
     # format: Proc -> passes junkval to Proc
+    # format: :sym -> calls .to_sym
     #
     # format: with exclude: - runs exclude AFTER running format. This is the whole point of formatters; it allows us to say junk().to_s, exclude: :otherval
 
