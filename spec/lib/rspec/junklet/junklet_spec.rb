@@ -25,15 +25,15 @@ describe JunkletSpy do
     end
 
     it 'delegates junk generation to junk' do
-      expect(subject).to receive(:make_junklet).with(:pig_truck, 'pig_truck', '_', 'junkety_junky_junk')
-      expect(subject).to receive(:make_junklet).with(:cow_truck, 'cow_truck', '_', 'junkety_junky_junk')
+      expect(subject).to receive(:make_junklet).with(:pig_truck, 'pig_truck', '_')
+      expect(subject).to receive(:make_junklet).with(:cow_truck, 'cow_truck', '_')
       subject.junklet :pig_truck, :cow_truck
     end
 
     context "with separator" do
       it 'converts separator in name' do
-        expect(subject).to receive(:make_junklet).with(:pig_truck, 'pig~truck', '~', 'junkety_junky_junk')
-        expect(subject).to receive(:make_junklet).with(:cow_truck, 'cow~truck', '~', 'junkety_junky_junk')
+        expect(subject).to receive(:make_junklet).with(:pig_truck, 'pig~truck', '~')
+        expect(subject).to receive(:make_junklet).with(:cow_truck, 'cow~truck', '~')
         subject.junklet :pig_truck, :cow_truck, separator: '~'
       end
     end

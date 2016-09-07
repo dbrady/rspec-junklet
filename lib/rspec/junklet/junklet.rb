@@ -15,12 +15,12 @@ module RSpec
         names = names.map {|name| name.gsub(/_/, separator)}
 
         args.zip(names).each do |arg, name|
-          make_junklet arg, name, separator, junk
+          make_junklet arg, name, separator
         end
       end
 
-      def make_junklet(let_name, name, separator, junk_data)
-        let(let_name) { "#{name}#{separator}#{junk_data}" }
+      def make_junklet(let_name, name, separator)
+        let(let_name) { "#{name}#{separator}#{junk}" }
       end
     end
   end
