@@ -42,12 +42,15 @@ and varied types of junk data. The former is meant to be used as part of the DSL
 to declare pieces of data to be junk, while the latter is intended to be used
 anywhere inside RSpec to supply the junk data itself.
 
-To illustrate, these statements are functionally identical:
+To illustrate, these statements are essentially identical:
 
 ```ruby
 junklet :pigtruck
 let(:pigtruck) { junk }
 ```
+
+_Caveat: they are slightly different; `junklet :pigtruck` is actually identical
+to `let(:pigtruck) { "pigtruck-" + junk }`_
 
 ## Junklet
 
