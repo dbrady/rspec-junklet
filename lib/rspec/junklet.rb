@@ -1,3 +1,4 @@
+require 'rspec'
 require_relative "./junklet/version"
 require_relative "./junklet/junk"
 require_relative "./junklet/junklet"
