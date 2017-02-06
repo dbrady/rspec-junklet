@@ -6,6 +6,7 @@ require_relative PROJECT_ROOT + "lib" + "rspec" + "junklet"
 
 
 require "pry"
+require "byebug"
 
 # Since we've kept rigidly to 80-columns, we can easily
 # Do a pretty side-by-side diff here. This won't handle
