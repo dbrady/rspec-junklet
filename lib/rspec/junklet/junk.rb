@@ -133,10 +133,10 @@ module RSpec
           end
 
           val = if repeat.zero?
-                  value(generator, formatter, excluder)
+                  generate_junk(generator, formatter, excluder)
                 else
                   repeat.times.map {
-                    value(generator, formatter, excluder)
+                    generate_junk(generator, formatter, excluder)
                   }
                 end
           val
@@ -153,7 +153,7 @@ module RSpec
 
       private
 
-      def value(generator, formatter, excluder)
+      def generate_junk(generator, formatter, excluder)
         begin
           v = formatter.call(generator.call)
         end while excluder.call(v)
