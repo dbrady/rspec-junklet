@@ -30,8 +30,8 @@ describe ::RSpec::Junklet::Junk do
   end
 
   describe "#junk(:int)" do
-    it "is a Fixnum" do
-      expect(junk(:int)).to be_a Fixnum
+    it "generates a Fixnum" do
+      expect(junk(:int)).to be_a Integer
     end
 
     context "with min or max option" do
@@ -42,38 +42,60 @@ describe ::RSpec::Junklet::Junk do
         expect(val).to be <= 5
       end
     end
+
+    context "with size option" do
+      let(:val) { junk :int, size: 4 }
+
+      it "generates a number with that many digits (no leading zeroes)" do
+        expect(val).to be >= 1000
+        expect(val).to be <= 9999
+      end
+    end
   end
 
+  describe "junk(:bool)" do
+    let(:val) { junk :bool }
 
+    it "returns a boolean" do
+      expect([false, true]).to include val
+    end
+  end
 
-  # describe "#junk(type)" do
-  #   context "when type is :int" do
-  #     let(:junk) { subject.junk :int }
-  #     specify { expect(junk).to be_kind_of(Fixnum) }
+  describe "junk(<Array>)" do
+    let(:options) { [:a, :b, 3] }
+    let(:val) { junk options }
 
+    it "returns an element of the collection" do
+      expect(options).to include val
+    end
+  end
 
-  #     context "with size option" do
-  #       let(:junk) { subject.junk :int, size: 4 }
-  #       it "constrains the value" do
-  #         expect((1000..9999)).to include(junk)
-  #       end
-  #     end
-  #   end
+  describe "junk(<Enumerable>)" do
+    let(:options) { (1..5) }
+    let(:val) { junk options }
 
-  #   context "when type is :bool" do
-  #     let(:junk) { subject.junk :bool }
+    it "returns an element of the collection" do
+      expect(options).to include val
+    end
 
-  #     it "returns a boolean" do
-  #       expect([false, true]).to include(junk)
-  #     end
-  #   end
+    it "calls #.to_a on the Enumerable" do
+      # This expectation is included to document that this happens, and could
+      # potentially cause a memory problem. Don't do junk (1..1_000_000_000_000)
+      # unless you're all done with having memory.
+      expect(options).to receive(:to_a).and_call_original
+      expect(options).to include val
+    end
+  end
 
-  #   context "when type is Array or Enumerable" do
-  #     let(:junk) { subject.junk [:a, :b, 3] }
+  describe "junk(<Proc>)" do
+    let(:lambda) { ->{ [1,2,3].sample } }
+    let(:val) { junk lambda }
 
-  #     specify { expect([:a, :b, 3]).to include(junk) }
-  #   end
-
+    it "evaluates the proc" do
+      expect(lambda).to receive(:call).and_call_original
+      expect([1,2,3]).to include val
+    end
+  end
   #   context "when type is Proc" do
   #     let(:junk) { subject.junk ->{ [1,2,3].sample } }
 
