@@ -96,31 +96,61 @@ describe ::RSpec::Junklet::Junk do
       expect([1,2,3]).to include val
     end
   end
-  #   context "when type is Proc" do
-  #     let(:junk) { subject.junk ->{ [1,2,3].sample } }
 
-  #     specify { expect([1,2,3]).to include(junk) }
-  #   end
-  # end
+  describe "exclude option" do
+    let(:even_numbers) { [0,2,4,6,8,10] }
+    let(:odd_numbers) { [1,3,5,7,9] }
 
-  # context "with exclude option" do
-  #   context "when excluding an item" do
-  #     let(:junk) { subject.junk :int, max: 1, exclude: 1 }
+    context "when excluding an item" do
+      let(:val) { junk :bool, exclude: true }
 
-  #     specify { expect(junk).to eq(0) }
-  #   end
+      it "excludes the item" do
+        expect(val).to be false
+      end
+    end
 
-  #   context "when excluding an array" do
-  #     let(:junk) { subject.junk :int, max: 10, exclude: [1,3,5,7,9] }
+    context "when excluding a list" do
+      let(:val) { junk :int, max: 10, exclude: odd_numbers }
 
-  #     specify { expect([0,2,4,6,8,10]).to include(junk) }
-  #   end
+      it "excludes all of the items" do
+        expect(val).to be_in even_numbers
+      end
+    end
 
-  #   context "when excluding an enumerable" do
-  #     let(:junk) { subject.junk :int, max: 10, exclude: 1.step(10, 2) }
+    context "when excluding an enumerator" do
+      let(:odd_enum) { 1.step(9, 2) }
+      let(:val) { junk :int, max: 10, exclude: odd_enum }
 
-  #     specify { expect([0,2,4,6,8,10]).to include(junk) }
-  #   end
+      it "excludes the elements of the enumerable" do
+        expect(val).to be_in even_numbers
+      end
+
+      it "does not call #.to_a on the enumerable to get the complete list" do
+        expect(odd_enum).to_not receive(:to_a)
+        expect(val).to be_in even_numbers
+      end
+
+      it "calls #include? on the enumerable to determine rejection" do
+        expect(odd_enum).to receive(:include?).at_least :once
+        expect(val).to be_in even_numbers
+      end
+    end
+
+    context "when excluding a Proc" do
+      let(:odd_proc) { ->(x) { [1,3,5,7,9].include? x } }
+      let(:val) { junk :int, max: 10, exclude: odd_proc }
+
+      it "passes the junk candidates to the proc" do
+        # expect(odd_proc).to_receive(:call)
+      end
+
+      it "excludes the candidate if the proc returns true" do
+        expect(val).to be_in even_numbers
+      end
+    end
+  end
+
+
 
   #   context "when excluding a Proc" do
   #     let(:junk) { subject.junk :int, max: 10, exclude: ->(x) { x%2==1 } }
