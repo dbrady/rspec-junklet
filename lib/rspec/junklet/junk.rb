@@ -67,14 +67,15 @@ module RSpec
           type = args.shift
           opts = args.last || {}
 
-          excluder = if opts[:exclude]
-                       if opts[:exclude].is_a?(Proc)
-                         opts[:exclude]
-                       else
-                         ->(x) { Array(opts[:exclude]).include?(x) }
-                       end
-                     else
+          excluder = case opts[:exclude]
+                     when Proc
+                       opts[:exclude]
+                     when Enumerator
+                       ->(x) { opts[:exclude].include?(x) }
+                     when nil
                        ->(x) { false }
+                     else
+                       ->(x) { Array(opts[:exclude]).include?(x) }
                      end
 
           formatter = case opts[:format]
