@@ -88,7 +88,7 @@ module RSpec
                           opts[:format].new(0).respond_to? :format
                         ->(x) { opts[:format].new(x).format }
                       when String
-                        ->(x) { sprintf(opts[:format], x) }
+                       ->(x) { sprintf(opts[:format], *Array(x)) }
                       when Proc
                         opts[:format]
                       else
