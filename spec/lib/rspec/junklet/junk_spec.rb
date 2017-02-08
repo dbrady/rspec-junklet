@@ -156,84 +156,88 @@ describe ::RSpec::Junklet::Junk do
     end
   end
 
-  # context "with format option" do
-  #   context "when format is :string" do
-  #     let(:junk) { subject.junk :int, max: 0, format: :string }
+  describe "format option" do
+    context "when format is :string" do
+      it "returns the junk cast to a string" do
+        expect(junk [42], format: :string).to eq "42"
+      end
 
-  #     specify { expect(junk).to eq("0") }
-  #   end
+      let(:item) { double }
+      let(:generator) { [item] }
+      let(:val) { junk generator, format: :string }
 
-  #   context "when format is :int" do
-  #     let(:junk) { subject.junk ["42"], format: :int }
+      it "sends #to_s to the junk to convert it" do
+        expect(item).to receive(:to_s).and_return "42"
+        expect(val).to eq "42"
+      end
+    end
 
-  #     specify { expect(junk).to be_kind_of(Integer) }
-  #     specify { expect(junk).to eq(42) }
-  #   end
+    # Why is this even here, it never gets used...
+    context "when format is :int" do
+      it "returns the junk cast to an integer" do
+        expect(junk ["42"], format: :int).to eq 42
+      end
 
-  #   context "when format is a format string" do
-  #     let(:junk) { subject.junk [15], format: "0x%02x" }
+      let(:item) { double }
+      let(:generator) { [item] }
+      let(:val) { junk generator, format: :int }
 
-  #     it "formats the value by the string" do
-  #       expect(junk).to eq("0x0f")
-  #     end
-  #   end
+      it "sends #to_i to the junk to convert it" do
+        expect(item).to receive(:to_i).and_return 42
+        expect(val).to eq 42
+      end
+    end
 
-  #   context "when format is a Junklet::Formatter" do
-  #     class HexTripler < RSpec::Junklet::Formatter
-  #       def value
-  #         input * 3
-  #       end
+    context "when format is a sprintf-style format string" do
+      let(:binary_string) { junk :int, format: "%b" }
 
-  #       def format
-  #         "0x%02x" % value
-  #       end
-  #     end
+      it "formats the generated junk with the format string" do
+        expect(binary_string).to match /^[01]+$/
+      end
 
-  #     let(:junk) { subject.junk [4], format: HexTripler }
+      context "when generator emits an array" do
+        let(:generator) { ->{ [2017, 1, 9] } }
+        let(:val) { junk generator, format: "%d-%02d-%02d" }
 
-  #     it "delegates to #format" do
-  #       expect(junk).to be_kind_of(String)
-  #       expect(junk).to eq("0x0c")
-  #     end
-  #   end
+        it "passes all of the array elements to the format string" do
+          expect(val).to eq "2017-01-09"
+        end
+      end
+    end
 
-  #   context "when format is a class that quacks like Junklet::Formatter" do
-  #     class HexDoubler
-  #       def initialize(input)
-  #         @n = input
-  #       end
+    context "when fromat is a custom Junklet::Formatter class" do
+      # By inheriting from Formatter, we get new(input) for free
+      class HexTripler < RSpec::Junklet::Formatter
+        def format
+          "0x%02x" % (input * 3)
+        end
+      end
 
-  #       def value
-  #         @n * 2
-  #       end
+      let(:val) { junk [14], format: HexTripler }
 
-  #       def format
-  #         "0x%04x" % value
-  #       end
-  #     end
+      it "passes junk to new and calls format" do
+        expect(val).to eq "0x2a"
+      end
+    end
 
-  #     let(:junk) { subject.junk [12], format: HexDoubler }
+    context "when format is a any class that implements new(1) and format" do
+      class HexDoubler
+        def initialize(input)
+          @n = input
+        end
 
-  #     it "works as expected" do
-  #       expect(junk).to be_kind_of(String)
-  #       expect(junk).to eq("0x0018")
-  #     end
-  #   end
+        def format
+          "0x%02x" % (@n * 2)
+        end
+      end
 
-  #   context "but does not implement #value" do
-  #     class BadDoublerNoFormat
-  #       def initialize(input)
-  #       end
+      let(:val) { junk [14], format: HexDoubler }
 
-  #       def value
-  #       end
-  #     end
-
-  #     let(:junk) { subject.junk [2], format: BadDoublerNoFormat }
-
-  #     specify { expect { junk }.to raise_error("Formatter class must implement #format method") }
-  #   end
-
+      it "passes junk to new and calls format" do
+        expect(val).to eq "0x1c"
+      end
+    end
+  end
 
   #   # BUG: this special case of format does not work:
   #   # doubled_string = junk 6, format: ->(x) { x * 2 })

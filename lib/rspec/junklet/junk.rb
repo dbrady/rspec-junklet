@@ -84,8 +84,6 @@ module RSpec
                       when :int
                         ->(x) { x.to_i }
                       when Class
-                        raise "Formatter class must implement #format method" unless
-                          opts[:format].new(0).respond_to? :format
                         ->(x) { opts[:format].new(x).format }
                       when String
                        ->(x) { sprintf(opts[:format], *Array(x)) }
