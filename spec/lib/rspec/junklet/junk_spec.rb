@@ -131,32 +131,30 @@ describe ::RSpec::Junklet::Junk do
       end
 
       it "calls #include? on the enumerable to determine rejection" do
-        expect(odd_enum).to receive(:include?).at_least :once
+        expect(odd_enum).to receive(:include?).at_least(:once).and_call_original
         expect(val).to be_in even_numbers
       end
     end
 
     context "when excluding a Proc" do
-      let(:odd_proc) { ->(x) { [1,3,5,7,9].include? x } }
-      let(:val) { junk :int, max: 10, exclude: odd_proc }
-
-      it "passes the junk candidates to the proc" do
-        # expect(odd_proc).to_receive(:call)
-      end
+      let(:generator) { [1,3,5,6].to_enum }
+      let(:generator_proc) { -> { generator.next } }
+      let(:odd_excluder_proc) { ->(x) { x % 2 == 1 } }
+      let(:val) { junk generator_proc, exclude: odd_excluder_proc }
 
       it "excludes the candidate if the proc returns true" do
-        expect(val).to be_in even_numbers
+        expect(val).to eq 6
+      end
+
+      it "passes the junk candidates to the proc" do
+        expect(odd_excluder_proc).to receive(:call).with(1).and_call_original # rejected
+        expect(odd_excluder_proc).to receive(:call).with(3).and_call_original # rejected
+        expect(odd_excluder_proc).to receive(:call).with(5).and_call_original # rejected
+        expect(odd_excluder_proc).to receive(:call).with(6).and_call_original # accepted
+        expect(val).to eq 6
       end
     end
   end
-
-
-
-  #   context "when excluding a Proc" do
-  #     let(:junk) { subject.junk :int, max: 10, exclude: ->(x) { x%2==1 } }
-  #     specify { expect([0,2,4,6,8,10]).to include(junk) }
-  #   end
-  # end
 
   # context "with format option" do
   #   context "when format is :string" do
