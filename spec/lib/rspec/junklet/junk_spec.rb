@@ -220,7 +220,7 @@ describe ::RSpec::Junklet::Junk do
       end
     end
 
-    context "when format is a any class that implements new(1) and format" do
+    context "when format is a any class that implements .new(junk) and #format" do
       class HexDoubler
         def initialize(input)
           @n = input
@@ -237,29 +237,32 @@ describe ::RSpec::Junklet::Junk do
         expect(val).to eq "0x1c"
       end
     end
+
+    context "when format is a Proc" do
+      let(:val) { junk [14], format: ->(x) { x.to_s(2) } }
+
+      it "formats the junk through the proc" do
+        expect(val).to eq "1110"
+      end
+
+      context "when generator emits an array" do
+        let(:generator) { ->{ [2017, 1, 9] } }
+        let(:val) { junk generator, format: ->(x) { "%d-%02d-%02d" % x } }
+
+        it "passes all of the array elements to the format string" do
+          expect(val).to eq "2017-01-09"
+        end
+      end
+    end
   end
 
-  #   # BUG: this special case of format does not work:
-  #   # doubled_string = junk 6, format: ->(x) { x * 2 })
-  #   # expect(doubled_string.size).to eq(12) # nope, it's 6
-  #   # junk 6, format: ->(x) { x.upcase } # also returns x unmodified
+  describe "format and exclude used together" do
+    let(:truth) { junk :bool, format: :string, exclude: "false" }
+    let(:lies) { junk :bool, format: :string, exclude: truth }
 
-  #   context "when format is a Proc" do
-  #     let(:junk) { subject.junk [3], format: ->(x) { x * 3 } }
-
-  #     it "calls proc on junk value" do
-  #       expect(junk).to eq(9)
-  #     end
-  #   end
-
-  #   context "when format and exclude are used together" do
-  #     let(:truth) { subject.junk :bool, format: :string, exclude: "false" }
-  #     let(:lies) { subject.junk :bool, format: :string, exclude: truth }
-
-  #     specify "it just works" do
-  #       expect(truth).to eq("true")
-  #       expect(lies).to eq("false")
-  #     end
-  #   end
-  # end
+    it "applies exclusion after formatting" do
+      expect(truth).to eq("true")
+      expect(lies).to eq("false")
+    end
+  end
 end
