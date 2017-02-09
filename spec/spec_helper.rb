@@ -79,3 +79,7 @@ RSpec::Matchers.define :be_in do |list|
     list.include? element
   end
 end
+
+gem_root = File.expand_path(File.join(File.dirname(__FILE__), ".."))
+
+Dir[File.join(gem_root, 'spec/support/**/*.rb')].each { |f| require f }
