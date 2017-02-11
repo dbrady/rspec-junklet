@@ -1,9 +1,22 @@
 require 'spec_helper'
 require PROJECT_ROOT + 'lib/rspec/junklet/junk.rb'
+require PROJECT_ROOT + 'lib/rspec/junklet/generator.rb'
 
 RSpec.configure do |config|
   config.extend(RSpec::Junklet::Junk)    # This lets us say junk() in describes and contexts
   config.include(RSpec::Junklet::Junk)    # This lets us say junk() in describes and contexts
+end
+
+class CycleGenerator < RSpec::Junklet::Generator
+  def initialize(options={})
+    min = options[:min] || 1
+    max = options[:max] || 3
+    @gen = (min..max).cycle
+  end
+
+  def call
+    @gen.next
+  end
 end
 
 describe ::RSpec::Junklet::Junk do
@@ -122,6 +135,33 @@ describe ::RSpec::Junklet::Junk do
           .to raise_error(JunkletTypeError, /Junk type 'test_bad' has already been registered/)
       end
     end
+  end
+
+  describe "junk(<Generator>)" do
+    context "when generator is passed straight in" do
+      let(:generator) { CycleGenerator.new }
+      let(:val) { junk generator }
+
+      it "generates junk by sending #call" do
+        # remember it's cached by the let
+        expect(generator).to receive(:call).exactly(:once).and_call_original
+        expect(val).to eq 1
+        expect(val).to eq 1
+      end
+    end
+
+    # context "when generator is defined as junk" do
+    #   define_junk :test123, CycleGenerator
+
+    #   let(:val) { junk :test123 }
+
+    #   it "generates junk by sending #call" do
+    #     expect(val).to eq 1
+    #     expect(val).to eq 2
+    #     expect(val).to eq 3
+    #     expect(val).to eq 1
+    #   end
+    # end
   end
 
   describe "exclude option" do
@@ -292,4 +332,18 @@ describe ::RSpec::Junklet::Junk do
       expect(lies).to eq("false")
     end
   end
+
+  # describe "#define_junk" do
+  #   it "passes options to Generator.new" do
+  #     instance_eval "undefine_junk :test_123"
+  #     expect(CycleGenerator)
+  #       .to receive(:new)
+  #            .with( {min: 3, max: 5 } )
+  #            .and_call_original
+  #     instance_eval"define_junk :test_123, CycleGenerator.new"
+  #     instance_eval "junk :test_123, min: 3, max: 5"
+  #     # TODO: Make this work, but then... ugh. What about "junk :test_123, min: 5", e.g. adding/extending/changing options
+  #     # We're close but the metaphor isn't *quite* right
+  #   end
+  # end
 end

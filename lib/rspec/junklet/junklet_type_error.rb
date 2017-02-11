@@ -1,0 +1,1 @@
+class JunkletTypeError < StandardError; end

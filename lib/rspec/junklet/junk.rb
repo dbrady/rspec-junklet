@@ -5,8 +5,44 @@ require_relative 'registry'
 module RSpec
   module Junklet
     module Junk
-      def define_junk name, generator
-        Registry[name] = generator
+      # Embarrassing to duplicate this method, but this is the version of the
+      # method that gets called by the world inside specs. If I call
+      # self.define_junk from here, it causes a stack fault.
+      def define_junk name, generator, options={}
+        Registry[name] = if generator.is_a? Generator
+                           generator.new options
+                         else
+                           # TODO: Can't pass options to procs
+                           generator
+                         end
+      end
+
+      def undefine_junk name
+        Registry.delete name
+      end
+
+      # This is the version called automatically by self.included(). It can't
+      # see the other method because it's unreified--it's an instance method on
+      # a class that hasn't mixed us in yet. So... eh. Duplicate the code for
+      # now.
+      def self.define_junk name, generator, options={}
+        Registry[name] = if generator.is_a? Generator
+                           generator.new options
+                         else
+                           # TODO: Can't pass options to procs
+                           generator
+                         end
+      end
+
+      @@common_types_are_registered = false
+      def self.register_common_types
+        return if @@common_types_are_registered
+        @@common_types_are_registered = true
+        self.define_junk :bool, -> { [true, false].sample }
+      end
+
+      def self.included(_)
+        register_common_types
       end
 
       def junk(*args)
@@ -67,8 +103,9 @@ module RSpec
         # FIXME: Figure out what our valid options are and parse them;
         #        raise errors if present.
 
+
         repeat = 0
-        junk_types = [Symbol, Array, Enumerable, Proc]
+        junk_types = [Symbol, Array, Enumerable, Proc, Generator]
         if args.size > 0 && junk_types.any? {|klass| args.first.is_a?(klass) }
           type = args.shift
           opts = args.last || {}
@@ -125,8 +162,6 @@ module RSpec
             min,max = max,min if min>max
 
             generator = -> { rand(max-min) + min }
-          when :bool
-            generator = -> { [true, false].sample }
           when Symbol
             generator = ::RSpec::Junklet::Registry[type]
             raise JunkletTypeError.new("Unrecognized junk type: '#{type}'") unless generator
@@ -135,6 +170,8 @@ module RSpec
             generator = -> { type.to_a.sample }
           when Proc
             repeat = opts[:size] if opts[:size]
+            generator = type
+          when Generator
             generator = type
           else
             raise "Unrecognized junk type: '#{type}'"
@@ -149,7 +186,11 @@ module RSpec
                 end
           val
         else
-          size = args.first.is_a?(Numeric) ? args.first : 32
+          if args.size > 0 && !args.first.is_a?(Integer)
+            raise JunkletTypeError.new("Unrecognized junk type: '#{args.first}'") unless generator
+          end
+
+          size = args.first || 32
           # hex returns size*2 digits, because it returns a 0..255 byte
           # as a hex pair. But when we want junk, we want *bytes* of
           # junk. Get (size+1)/2 chars, which will be correct for even
