@@ -6,6 +6,7 @@ require_relative PROJECT_ROOT + "lib" + "rspec" + "junklet"
 
 
 require "pry"
+require "byebug"
 
 # Since we've kept rigidly to 80-columns, we can easily
 # Do a pretty side-by-side diff here. This won't handle
@@ -46,3 +47,39 @@ def dump_diff(expected_lines, got_lines)
   end
   dump_footer
 end
+
+# be_in - working inverse of #cover and #include, e.g.
+#
+# let(:range) { (1..5) }
+# let(:list) { [1,2,3,4,5] }
+# let(:val) { 3 }
+#
+# specify { expect(range).to cover val }
+# specify { expect(val).to be_in range }
+# specify { expect(list).to include val }
+# specify { expect(val).to be_in list }
+#
+# Why? Because sometimes I think reading order is important. For example, if the
+# options for a command can vary and we want to assert that they contain a known
+# correct value, I prefer
+#
+# specify { expect(options).to include value }
+#
+# As it is the options that are in question here. But if the list of known
+# options is fixed, and the code under test returns a value that we want to
+# prove is inside the list of known options, I prefer
+#
+# specify { expect(value).to be_in options }
+#
+# ...and yes, I frequently put an #in? method on Object that takes a collection,
+# and simply calls collection.include?(self) internally. Again just because
+# reading order.
+RSpec::Matchers.define :be_in do |list|
+  match do |element|
+    list.include? element
+  end
+end
+
+gem_root = File.expand_path(File.join(File.dirname(__FILE__), ".."))
+
+Dir[File.join(gem_root, 'spec/support/**/*.rb')].each { |f| require f }
