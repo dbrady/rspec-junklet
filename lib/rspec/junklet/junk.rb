@@ -1,8 +1,14 @@
 require_relative 'formatter'
+require_relative 'junklet_type_error'
+require_relative 'registry'
 
 module RSpec
   module Junklet
     module Junk
+      def define_junk name, generator
+        Registry[name] = generator
+      end
+
       def junk(*args)
         # TODO: It's long past time to extract this....
 
@@ -121,6 +127,9 @@ module RSpec
             generator = -> { rand(max-min) + min }
           when :bool
             generator = -> { [true, false].sample }
+          when Symbol
+            generator = ::RSpec::Junklet::Registry[type]
+            raise JunkletTypeError.new("Unrecognized junk type: '#{type}'") unless generator
           when Array, Enumerable
             repeat = opts[:size] if opts[:size]
             generator = -> { type.to_a.sample }

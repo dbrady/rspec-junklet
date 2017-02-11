@@ -57,7 +57,7 @@ describe ::RSpec::Junklet::Junk do
     let(:val) { junk :bool }
 
     it "returns a boolean" do
-      expect([false, true]).to include val
+      expect(val).to be_in [false, true]
     end
   end
 
@@ -66,7 +66,7 @@ describe ::RSpec::Junklet::Junk do
     let(:val) { junk options }
 
     it "returns an element of the collection" do
-      expect(options).to include val
+      expect(val).to be_in options
     end
   end
 
@@ -75,7 +75,7 @@ describe ::RSpec::Junklet::Junk do
     let(:val) { junk options }
 
     it "returns an element of the collection" do
-      expect(options).to include val
+      expect(val).to be_in options
     end
 
     it "calls #.to_a on the Enumerable" do
@@ -83,17 +83,44 @@ describe ::RSpec::Junklet::Junk do
       # potentially cause a memory problem. Don't do junk (1..1_000_000_000_000)
       # unless you're all done with having memory.
       expect(options).to receive(:to_a).and_call_original
-      expect(options).to include val
+      expect(val).to be_in options
     end
   end
 
   describe "junk(<Proc>)" do
-    let(:lambda) { ->{ [1,2,3].sample } }
-    let(:val) { junk lambda }
+    let(:proc) { ->{ [1,2,3].sample } }
+    let(:val) { junk proc }
 
     it "evaluates the proc" do
-      expect(lambda).to receive(:call).and_call_original
-      expect([1,2,3]).to include val
+      expect(proc).to receive(:call).and_call_original
+      expect(val).to be_in [1,2,3]
+    end
+  end
+
+  describe "junk(<Symbol>)" do
+    context "when <Symbol> is not a defined generator" do
+      it "raises JunkletTypeError" do
+        expect { junk :arglebargle }.to raise_error(JunkletTypeError, /Unrecognized junk type: 'arglebargle'/)
+      end
+    end
+
+    context "when <Symbol> is defined as a Proc generator" do
+      proc = ->{ [1,2,3].sample }
+      define_junk :test_123, proc
+      let(:val) { junk :test_123 }
+
+      it "evaluates the proc" do
+        expect(val).to be_in [1, 2, 3]
+      end
+    end
+
+    context "when <Symbol> is redefined" do
+      define_junk :test_bad, -> { rand }
+
+      it "raises JunkletTypeError" do
+        expect { instance_eval "define_junk :test_bad, -> { rand * 2 }" }
+          .to raise_error(JunkletTypeError, /Junk type 'test_bad' has already been registered/)
+      end
     end
   end
 

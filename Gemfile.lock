@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rspec-junklet (2.1.3)
+    rspec-junklet (2.2.0)
       rspec (>= 2.0, < 4.0)
 
 GEM
