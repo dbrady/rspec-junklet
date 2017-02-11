@@ -67,14 +67,15 @@ module RSpec
           type = args.shift
           opts = args.last || {}
 
-          excluder = if opts[:exclude]
-                       if opts[:exclude].is_a?(Proc)
-                         opts[:exclude]
-                       else
-                         ->(x) { Array(opts[:exclude]).include?(x) }
-                       end
-                     else
+          excluder = case opts[:exclude]
+                     when Proc
+                       opts[:exclude]
+                     when Enumerator
+                       ->(x) { opts[:exclude].include?(x) }
+                     when nil
                        ->(x) { false }
+                     else
+                       ->(x) { Array(opts[:exclude]).include?(x) }
                      end
 
           formatter = case opts[:format]
@@ -83,11 +84,9 @@ module RSpec
                       when :int
                         ->(x) { x.to_i }
                       when Class
-                        raise "Formatter class must implement #format method" unless
-                          opts[:format].new(0).respond_to? :format
                         ->(x) { opts[:format].new(x).format }
                       when String
-                        ->(x) { sprintf(opts[:format], x) }
+                       ->(x) { sprintf(opts[:format], *Array(x)) }
                       when Proc
                         opts[:format]
                       else
@@ -133,10 +132,10 @@ module RSpec
           end
 
           val = if repeat.zero?
-                  value(generator, formatter, excluder)
+                  generate_junk(generator, formatter, excluder)
                 else
                   repeat.times.map {
-                    value(generator, formatter, excluder)
+                    generate_junk(generator, formatter, excluder)
                   }
                 end
           val
@@ -153,7 +152,7 @@ module RSpec
 
       private
 
-      def value(generator, formatter, excluder)
+      def generate_junk(generator, formatter, excluder)
         begin
           v = formatter.call(generator.call)
         end while excluder.call(v)

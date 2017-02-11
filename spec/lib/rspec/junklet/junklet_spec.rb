@@ -1,40 +1,39 @@
 require PROJECT_ROOT + 'lib/rspec/junklet/junklet'
 
-class JunkletSpy
-  attr_reader :lets
-
-  include ::RSpec::Junklet::Junklet
-
-  def let(*args)
-    @lets = args
-  end
-
-  def junk
-    'junkety_junky_junk'
-  end
+RSpec.configure do |config|
+  config.extend(RSpec::Junklet::Junklet)    # This lets us say junklet() in describes and contexts
 end
 
-describe JunkletSpy do
-  specify { expect(subject).to respond_to(:junklet) }
+describe '.junklet' do
+  junklet :pigs, :cows
 
-  describe '.junklet' do
-    it 'delegates named junklets to let' do
-      expect(subject).to receive(:let).with(:pigs)
-      expect(subject).to receive(:let).with(:cows)
-      subject.junklet :pigs, :cows
+  it "generates a let" do
+    expect(pigs).to be
+    expect(cows).to be
+  end
+
+  it "prefixes the let with its own name" do
+    expect(pigs).to match /^pigs_/
+    expect(cows).to match /^cows_/
+  end
+
+  it "appends 32 hex characters of random noise to make it unique" do
+    expect(pigs).to match /^pigs_[0-9a-f]{32}$/
+    expect(cows).to match /^cows_[0-9a-f]{32}$/
+  end
+
+  describe "separator option" do
+    junklet :pigtruck, separator: '~'
+
+    it 'uses separator instead of underscore' do
+      expect(pigtruck).to match /^pigtruck~/
     end
 
-    it 'delegates junk generation to junk' do
-      expect(subject).to receive(:make_junklet).with(:pig_truck, 'pig_truck', '_')
-      expect(subject).to receive(:make_junklet).with(:cow_truck, 'cow_truck', '_')
-      subject.junklet :pig_truck, :cow_truck
-    end
+    context "when junklet has underscores in its name" do
+      junklet :http_get_param, separator: '-'
 
-    context "with separator" do
-      it 'converts separator in name' do
-        expect(subject).to receive(:make_junklet).with(:pig_truck, 'pig~truck', '~')
-        expect(subject).to receive(:make_junklet).with(:cow_truck, 'cow~truck', '~')
-        subject.junklet :pig_truck, :cow_truck, separator: '~'
+      it 'replaces underscores in junklet name as well' do
+        expect(http_get_param).to match /^http-get-param-/
       end
     end
   end
