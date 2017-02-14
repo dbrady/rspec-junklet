@@ -119,26 +119,122 @@ describe ::RSpec::Junklet::Junk do
 
     context "when <Symbol> is defined as a Proc generator" do
       proc = ->{ [1,2,3].sample }
-      define_junk :test_123, proc
+      define_junklet :test_123, proc
       let(:val) { junk :test_123 }
 
       it "evaluates the proc" do
         expect(val).to be_in [1, 2, 3]
       end
     end
+  end
 
+  describe ".define_junklet" do
     context "when <Symbol> is redefined" do
-      define_junk :test_bad, -> { rand }
+      define_junklet :test_bad, -> { rand }
 
       it "raises JunkletTypeError" do
-        expect { instance_eval "define_junk :test_bad, -> { rand * 2 }" }
+        expect { instance_eval "define_junklet :test_bad, -> { rand * 2 }" }
           .to raise_error(JunkletTypeError, /Junk type 'test_bad' has already been registered/)
+      end
+    end
+
+    # define_junklet occers at spec *definition* time, and is NOT SCOPED. If you
+    # define a junklet anywhere in your suite, it will be defined before ANY
+    # spec is run, much like a before(:all) scope. It will also be defined for
+    # ALL specs, so you cannot define a junklet with the same name twice. It is
+    # vital to remember that define_junklet is for naming VERY GENERIC TYPES of
+    # junk; if you want to specialize it, use options to pass into the junklet
+    # after it is defined.
+    context "defines junklet regardless of scope" do
+      $first = "first"
+
+      # ----------------------------------------------------------------------
+      # BEGIN FIRST COPY OF THIS SPEC (which might get run first!)  This context
+      # appears twice, and is a duplicate. But RSpec may run either one first
+      # (because order=random), hence all this nonsense about whether $first is
+      # first and or $first is second
+      context "when a duplcate junklet is defined the first time in the spec" do
+        context "and this context is run #{$first}" do
+          if $first == "first"
+            $first = "later"
+            let(:val) { junk :type_unrepeatable }
+            it "defines a junklet just fine" do
+              instance_eval "define_junklet :type_unrepeatable, ->{42}"
+              expect(val).to eq 42
+            end
+          else
+            let(:val) { junk :type_unrepeatable }
+            it "raises JunkletTypeError" do
+              expect { instance_eval "define_junklet :type_unrepeatable, ->{42}" }
+                .to raise_error(JunkletTypeError, "Junk type 'type_unrepeatable' has already been registered")
+            end
+          end
+        end
+      end
+      # END FIRST COPY OF THIS SPEC
+      # ----------------------------------------------------------------------
+
+      # ----------------------------------------------------------------------
+      # BEGIN SECOND COPY OF THIS SPEC (which might get run first!)
+      # This context appears twice, and is a duplicate. But RSpec may run either
+      # one first, hence all this nonsense about whether $first is first and or
+      # $first is second
+      context "when a duplcate junklet is defined a second time in the spec" do
+        context "and this context is run #{$first}" do
+          if $first == "first"
+            $first = "later"
+            let(:val) { junk :type_unrepeatable }
+            it "defines a junklet just fine" do
+              instance_eval "define_junklet :type_unrepeatable, ->{42}"
+              expect(val).to eq 42
+            end
+          else
+            let(:val) { junk :type_unrepeatable }
+            it "raises JunkletTypeError" do
+              expect { instance_eval "define_junklet :type_unrepeatable, ->{42}" }
+                .to raise_error(JunkletTypeError, "Junk type 'type_unrepeatable' has already been registered")
+            end
+          end
+        end
+      end
+      # END SECOND COPY OF THIS SPEC
+      # ----------------------------------------------------------------------
+    end
+  end
+
+  describe "define_junklet(<bool>)" do
+    define_junklet :cointoss, :bool
+    let(:toss) { junk :cointoss }
+    let(:obverse) { junk :cointoss, exclude: toss }
+
+    it "generates junk according to the boolean type" do
+      expect(toss).to be_in [true, false]
+    end
+
+    it "allows lets to use options" do
+      expect(obverse).to eq !toss
+    end
+  end
+
+  context "when define_junklet applies constraints" do
+    it "those constraints are honored"
+    context "when constraints are applied to the junk" do
+      it "they override the junklet consstraints"
+    end
+
+    context "when a new junklet is defined based on the previous one" do
+      it "honors the existing constraints"
+      context "and that new junklet overrides the original constraints" do
+        it "honors the overridden constraints"
+        context "when constraints are applied to the junk" do
+          it "they override all constraints hitherto applied"
+        end
       end
     end
   end
 
   describe "junk(<Generator>)" do
-    context "when generator is passed straight in" do
+    context "when generator is passed straight in as an instance" do
       let(:generator) { CycleGenerator.new }
       let(:val) { junk generator }
 
@@ -150,8 +246,23 @@ describe ::RSpec::Junklet::Junk do
       end
     end
 
+    context "when enerator is passed straight in as a class" do
+      let(:val) { junk CycleGenerator, min: 7, max: 10 }
+
+      before do
+        expect(CycleGenerator)
+          .to receive(:new)
+               .with({min: 7, max: 10})
+               .and_call_original
+      end
+
+      it "creates an instance with .new(options), then sends it #call" do
+        expect(val).to eq 7
+      end
+    end
+
     # context "when generator is defined as junk" do
-    #   define_junk :test123, CycleGenerator
+    #   define_junklet :test123, CycleGenerator
 
     #   let(:val) { junk :test123 }
 
@@ -333,14 +444,14 @@ describe ::RSpec::Junklet::Junk do
     end
   end
 
-  # describe "#define_junk" do
+  # describe "#define_junklet" do
   #   it "passes options to Generator.new" do
-  #     instance_eval "undefine_junk :test_123"
+  #     instance_eval "undefine_junklet :test_123"
   #     expect(CycleGenerator)
   #       .to receive(:new)
   #            .with( {min: 3, max: 5 } )
   #            .and_call_original
-  #     instance_eval"define_junk :test_123, CycleGenerator.new"
+  #     instance_eval"define_junklet :test_123, CycleGenerator.new"
   #     instance_eval "junk :test_123, min: 3, max: 5"
   #     # TODO: Make this work, but then... ugh. What about "junk :test_123, min: 5", e.g. adding/extending/changing options
   #     # We're close but the metaphor isn't *quite* right

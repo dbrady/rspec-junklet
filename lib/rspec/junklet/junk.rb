@@ -1,4 +1,5 @@
 require_relative 'formatter'
+require_relative 'generator'
 require_relative 'junklet_type_error'
 require_relative 'registry'
 
@@ -8,7 +9,7 @@ module RSpec
       # Embarrassing to duplicate this method, but this is the version of the
       # method that gets called by the world inside specs. If I call
       # self.define_junk from here, it causes a stack fault.
-      def define_junk name, generator, options={}
+      def define_junklet name, generator, options={}
         Registry[name] = if generator.is_a? Generator
                            generator.new options
                          else
@@ -17,15 +18,11 @@ module RSpec
                          end
       end
 
-      def undefine_junk name
-        Registry.delete name
-      end
-
       # This is the version called automatically by self.included(). It can't
       # see the other method because it's unreified--it's an instance method on
       # a class that hasn't mixed us in yet. So... eh. Duplicate the code for
       # now.
-      def self.define_junk name, generator, options={}
+      def self.define_junklet name, generator, options={}
         Registry[name] = if generator.is_a? Generator
                            generator.new options
                          else
@@ -38,7 +35,7 @@ module RSpec
       def self.register_common_types
         return if @@common_types_are_registered
         @@common_types_are_registered = true
-        self.define_junk :bool, -> { [true, false].sample }
+        self.define_junklet :bool, -> { [true, false].sample }
       end
 
       def self.included(_)
@@ -105,7 +102,7 @@ module RSpec
 
 
         repeat = 0
-        junk_types = [Symbol, Array, Enumerable, Proc, Generator]
+        junk_types = [Symbol, Array, Enumerable, Proc, Generator, Class]
         if args.size > 0 && junk_types.any? {|klass| args.first.is_a?(klass) }
           type = args.shift
           opts = args.last || {}
@@ -165,6 +162,7 @@ module RSpec
           when Symbol
             generator = ::RSpec::Junklet::Registry[type]
             raise JunkletTypeError.new("Unrecognized junk type: '#{type}'") unless generator
+            return junk generator, opts
           when Array, Enumerable
             repeat = opts[:size] if opts[:size]
             generator = -> { type.to_a.sample }
@@ -173,6 +171,8 @@ module RSpec
             generator = type
           when Generator
             generator = type
+          when Class
+            generator = type.new opts
           else
             raise "Unrecognized junk type: '#{type}'"
           end
