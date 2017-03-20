@@ -1,3 +1,5 @@
+require 'securerandom'
+
 require_relative 'formatter'
 
 module RSpec
