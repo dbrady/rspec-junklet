@@ -205,7 +205,7 @@ describe ::RSpec::Junklet::Junk do
       end
     end
 
-    context "when fromat is a custom Junklet::Formatter class" do
+    context "when format is a custom Junklet::Formatter class" do
       # By inheriting from Formatter, we get new(input) for free
       class HexTripler < RSpec::Junklet::Formatter
         def format
